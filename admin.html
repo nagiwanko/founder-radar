@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FOUNDER RADAR — 管理画面</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--black:#0A0A0A;--white:#fff;--mint:#5EEAD4;--mint-dk:#0D9488;--g100:#F3F4F6;--g200:#E5E7EB;--g400:#9CA3AF;--g600:#4B5563;--g800:#1F2937}
+body{font-family:'Inter','Hiragino Sans',sans-serif;background:#F8F7F4;color:var(--g800);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* LOGIN */
+#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--black)}
+.login-box{background:#181818;border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:40px;width:360px;text-align:center}
+.login-logo{width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,var(--mint),#818CF8);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:var(--black);margin:0 auto 20px}
+.login-title{font-size:20px;font-weight:800;color:#fff;margin-bottom:6px}
+.login-sub{font-size:13px;color:var(--g400);margin-bottom:28px}
+.login-input{width:100%;padding:11px 14px;background:#222;border:1.5px solid rgba(255,255,255,.1);border-radius:10px;color:#fff;font-size:14px;font-family:inherit;outline:none;margin-bottom:12px}
+.login-input:focus{border-color:var(--mint)}
+.login-btn{width:100%;padding:12px;border-radius:10px;border:none;background:var(--mint);color:var(--black);font-size:14px;font-weight:700;font-family:inherit;cursor:pointer}
+.login-error{font-size:12px;color:#EF4444;margin-top:10px;min-height:18px}
+
+/* DASHBOARD */
+#dashboard{display:none}
+nav{background:var(--black);height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:100}
+.nav-logo{display:flex;align-items:center;gap:9px}
+.logo-mark{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--mint),#818CF8);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--black)}
+.nav-name{font-size:13px;font-weight:700;color:#fff;letter-spacing:.08em}
+.nav-badge{font-size:10px;color:var(--mint);padding:2px 8px;border-radius:10px;border:1px solid rgba(94,234,212,.3)}
+.nav-right{display:flex;align-items:center;gap:12px}
+.last-updated{font-size:11px;color:var(--g400)}
+.refresh-btn{padding:6px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:transparent;color:var(--g400);font-size:12px;font-family:inherit;cursor:pointer;transition:all .15s}
+.refresh-btn:hover{border-color:var(--mint);color:var(--mint)}
+
+main{max-width:1100px;margin:0 auto;padding:32px 24px}
+.page-title{font-size:24px;font-weight:800;color:var(--g800);margin-bottom:4px}
+.page-sub{font-size:14px;color:var(--g400);margin-bottom:28px}
+
+/* KPI Cards */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px}
+.kpi-card{background:#fff;border-radius:14px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.kpi-label{font-size:11px;font-weight:700;color:var(--g400);letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px}
+.kpi-value{font-size:32px;font-weight:800;color:var(--g800);line-height:1}
+.kpi-sub{font-size:12px;color:var(--g400);margin-top:4px}
+
+/* Charts */
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:28px}
+.chart-card{background:#fff;border-radius:14px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.chart-title{font-size:14px;font-weight:700;color:var(--g800);margin-bottom:4px}
+.chart-sub{font-size:12px;color:var(--g400);margin-bottom:20px}
+.chart-wrap{position:relative;height:240px}
+
+/* Table */
+.table-card{background:#fff;border-radius:14px;padding:24px;box-shadow:0 1px 4px rgba(0,0,0,.06);margin-bottom:28px}
+.table-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.table-title{font-size:14px;font-weight:700;color:var(--g800)}
+.table-count{font-size:12px;color:var(--g400)}
+table{width:100%;border-collapse:collapse}
+th{font-size:11px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.08em;padding:8px 12px;text-align:left;border-bottom:1px solid var(--g200)}
+td{font-size:13px;color:var(--g600);padding:10px 12px;border-bottom:1px solid var(--g100)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#FAFAFA}
+.badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600}
+.badge-seed{background:#D1FAE5;color:#065F46}
+.badge-preseed{background:#F3F4F6;color:#374151}
+.badge-early{background:#DBEAFE;color:#1E40AF}
+
+/* Benchmark panel */
+.bench-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:28px}
+.bench-card{background:#fff;border-radius:14px;padding:20px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.bench-sector{font-size:12px;font-weight:700;color:var(--mint-dk);margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--g100)}
+.bench-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.bench-metric{font-size:12px;color:var(--g600)}
+.bench-val{font-size:13px;font-weight:700;color:var(--g800)}
+.bench-n{font-size:10px;color:var(--g400);margin-top:8px}
+
+/* Loading */
+.loading{text-align:center;padding:60px;color:var(--g400);font-size:14px}
+.spinner{width:32px;height:32px;border:3px solid var(--g200);border-top-color:var(--mint);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media(max-width:768px){
+  .kpi-grid{grid-template-columns:1fr 1fr}
+  .charts-grid{grid-template-columns:1fr}
+  .bench-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">FR</div>
+    <div class="login-title">管理画面</div>
+    <div class="login-sub">FOUNDER RADAR Admin</div>
+    <input type="password" class="login-input" id="pw-input" placeholder="パスワードを入力" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">ログイン</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <nav>
+    <div class="nav-logo">
+      <div class="logo-mark">FR</div>
+      <span class="nav-name">FOUNDER RADAR</span>
+      <span class="nav-badge">Admin</span>
+    </div>
+    <div class="nav-right">
+      <span class="last-updated" id="last-updated"></span>
+      <button class="refresh-btn" onclick="loadAll()">↻ 更新</button>
+    </div>
+  </nav>
+
+  <main>
+    <div class="page-title">ダッシュボード</div>
+    <div class="page-sub" id="data-range"></div>
+
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      データを読み込み中...
+    </div>
+
+    <div id="content" style="display:none">
+      <!-- KPI -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">総登録数</div>
+          <div class="kpi-value" id="kpi-total">—</div>
+          <div class="kpi-sub">累計</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">セクター数</div>
+          <div class="kpi-value" id="kpi-sectors">—</div>
+          <div class="kpi-sub">登録あり</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">直近7日</div>
+          <div class="kpi-value" id="kpi-week">—</div>
+          <div class="kpi-sub">新規登録</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">データ入力率</div>
+          <div class="kpi-value" id="kpi-fill">—</div>
+          <div class="kpi-sub">ARR入力済み割合</div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-title">セクター別登録数</div>
+          <div class="chart-sub">全期間</div>
+          <div class="chart-wrap"><canvas id="chart-sector"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">ステージ別登録数</div>
+          <div class="chart-sub">全期間</div>
+          <div class="chart-wrap"><canvas id="chart-stage"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">ビジネスモデル別</div>
+          <div class="chart-sub">全期間</div>
+          <div class="chart-wrap"><canvas id="chart-biz"></canvas></div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">週次登録推移</div>
+          <div class="chart-sub">直近8週</div>
+          <div class="chart-wrap"><canvas id="chart-weekly"></canvas></div>
+        </div>
+      </div>
+
+      <!-- Benchmark medians -->
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">セクター別ベンチマーク中央値</div>
+          <div class="table-count" id="bench-note"></div>
+        </div>
+        <table id="bench-table">
+          <thead>
+            <tr>
+              <th>セクター</th>
+              <th>n</th>
+              <th>ARR中央値</th>
+              <th>成長率中央値</th>
+              <th>調達額中央値</th>
+              <th>チーム中央値</th>
+              <th>ランウェイ中央値</th>
+            </tr>
+          </thead>
+          <tbody id="bench-tbody"></tbody>
+        </table>
+      </div>
+
+      <!-- Recent submissions -->
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">直近の登録（匿名）</div>
+          <div class="table-count" id="recent-count"></div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>日時</th>
+              <th>セクター</th>
+              <th>ステージ</th>
+              <th>モデル</th>
+              <th>調達額</th>
+              <th>ARR</th>
+              <th>チーム</th>
+            </tr>
+          </thead>
+          <tbody id="recent-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+// ── CONFIG ─────────────────────────────
+const SUPABASE_URL = 'https://rulkdsizgatzvndiwdzb.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1bGtkc2l6Z2F0enZuZGl3ZHpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2ODIwMzcsImV4cCI6MjA5NzI1ODAzN30.4iPa3teGkopItZ408Q6YWRihFeIqb2Eyj39toqGHT8o';
+const ADMIN_PASSWORD = 'founderradar2025';
+
+// ── LOGIN ───────────────────────────────
+function doLogin() {
+  const pw = document.getElementById('pw-input').value;
+  if (pw === ADMIN_PASSWORD) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    loadAll();
+  } else {
+    document.getElementById('login-error').textContent = 'パスワードが違います';
+  }
+}
+
+// ── FETCH ───────────────────────────────
+async function fetchData(query) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/run_query`, {
+    method: 'POST',
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ query }),
+  });
+  return res.json();
+}
+
+async function fetchTable(table, select='*', order='created_at.desc', limit=50) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?select=${select}&order=${order}&limit=${limit}`, {
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+    },
+  });
+  return res.json();
+}
+
+// ── LOAD ALL ────────────────────────────
+let charts = {};
+async function loadAll() {
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('content').style.display = 'none';
+
+  try {
+    // Service role keyが必要なためsummary_by_sectorビューを直接使用
+    // anon keyでもinsertのみ許可なのでSQLを工夫
+    // → service_role相当の集計はSupabase Functions経由が本来だが、
+    //   ここではadmin画面用にservice_roleキーを使う
+    const SERVICE_KEY = SUPABASE_KEY; // 暫定：後でservice keyに差し替え推奨
+
+    const headers = {
+      'apikey': SERVICE_KEY,
+      'Authorization': `Bearer ${SERVICE_KEY}`,
+    };
+
+    // summary_overview view
+    const overviewRes = await fetch(`${SUPABASE_URL}/rest/v1/summary_overview?select=*`, { headers });
+    const overview = await overviewRes.json();
+
+    // summary_by_sector view
+    const sectorRes = await fetch(`${SUPABASE_URL}/rest/v1/summary_by_sector?select=*`, { headers });
+    const sectorData = await sectorRes.json();
+
+    // recent submissions
+    const recentRes = await fetch(`${SUPABASE_URL}/rest/v1/submissions?select=created_at,sector,stage,biz_model,raised,arr,team_size&order=created_at.desc&limit=20`, { headers });
+    const recent = await recentRes.json();
+
+    // weekly trend (past 8 weeks)
+    const weeklyRes = await fetch(`${SUPABASE_URL}/rest/v1/submissions?select=created_at&order=created_at.desc&limit=500`, { headers });
+    const allDates = await weeklyRes.json();
+
+    renderDashboard(overview, sectorData, recent, allDates);
+
+  } catch(e) {
+    console.error(e);
+    document.getElementById('loading').innerHTML = '<p style="color:#EF4444">データの読み込みに失敗しました。ページを更新してください。</p>';
+    return;
+  }
+
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('content').style.display = 'block';
+  document.getElementById('last-updated').textContent = '最終更新: ' + new Date().toLocaleTimeString('ja-JP');
+}
+
+// ── RENDER ──────────────────────────────
+function renderDashboard(overview, sectorData, recent, allDates) {
+  // KPI
+  const ov = Array.isArray(overview) ? overview[0] : overview;
+  document.getElementById('kpi-total').textContent = ov?.total_submissions ?? recent.length;
+  document.getElementById('kpi-sectors').textContent = ov?.sector_count ?? new Set(recent.map(r=>r.sector).filter(Boolean)).size;
+
+  // 直近7日
+  const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate()-7);
+  const weekCount = Array.isArray(allDates) ? allDates.filter(r=>new Date(r.created_at)>weekAgo).length : '—';
+  document.getElementById('kpi-week').textContent = weekCount;
+
+  // ARR入力率
+  const arrFilled = recent.filter(r=>r.arr!=null).length;
+  const fillRate = recent.length > 0 ? Math.round(arrFilled/recent.length*100) : 0;
+  document.getElementById('kpi-fill').textContent = fillRate + '%';
+
+  if (ov?.first_submission) {
+    document.getElementById('data-range').textContent =
+      `データ期間: ${new Date(ov.first_submission).toLocaleDateString('ja-JP')} 〜 ${new Date(ov.latest_submission).toLocaleDateString('ja-JP')}`;
+  }
+
+  // Charts
+  const COLORS = ['#5EEAD4','#818CF8','#FCD34D','#F87171','#34D399','#60A5FA','#A78BFA','#FB923C'];
+
+  // Sector chart
+  const sectorCounts = {};
+  recent.forEach(r=>{ if(r.sector) sectorCounts[r.sector]=(sectorCounts[r.sector]||0)+1; });
+  drawDoughnut('chart-sector', Object.keys(sectorCounts), Object.values(sectorCounts), COLORS);
+
+  // Stage chart
+  const stageCounts = {};
+  recent.forEach(r=>{ if(r.stage) stageCounts[r.stage]=(stageCounts[r.stage]||0)+1; });
+  drawDoughnut('chart-stage', Object.keys(stageCounts), Object.values(stageCounts), ['#5EEAD4','#818CF8','#FCD34D']);
+
+  // Biz model chart
+  const bizLabels = {saas:'SaaS',marketplace:'マーケットプレイス',hardware:'ハード',project:'受託',presales:'開発中',other:'その他'};
+  const bizCounts = {};
+  recent.forEach(r=>{ if(r.biz_model){ const l=bizLabels[r.biz_model]||r.biz_model; bizCounts[l]=(bizCounts[l]||0)+1; }});
+  drawDoughnut('chart-biz', Object.keys(bizCounts), Object.values(bizCounts), COLORS);
+
+  // Weekly trend
+  const weeks = {};
+  if(Array.isArray(allDates)) {
+    allDates.forEach(r=>{
+      const d = new Date(r.created_at);
+      const mon = new Date(d); mon.setDate(d.getDate()-d.getDay()+1);
+      const key = mon.toLocaleDateString('ja-JP',{month:'short',day:'numeric'});
+      weeks[key] = (weeks[key]||0)+1;
+    });
+  }
+  const wKeys = Object.keys(weeks).slice(-8);
+  const wVals = wKeys.map(k=>weeks[k]);
+  drawBar('chart-weekly', wKeys, wVals);
+
+  // Benchmark table
+  const tbody = document.getElementById('bench-tbody');
+  tbody.innerHTML = '';
+  if(Array.isArray(sectorData) && sectorData.length > 0) {
+    // Group by sector
+    const bySector = {};
+    sectorData.forEach(r=>{
+      if(!r.sector) return;
+      if(!bySector[r.sector]) bySector[r.sector] = {count:0, arr:[], growth:[], raised:[], team:[], runway:[]};
+      bySector[r.sector].count += parseInt(r.count)||0;
+      if(r.median_arr) bySector[r.sector].arr.push(parseFloat(r.median_arr));
+      if(r.median_growth) bySector[r.sector].growth.push(parseFloat(r.median_growth));
+      if(r.median_raised) bySector[r.sector].raised.push(parseFloat(r.median_raised));
+    });
+    Object.entries(bySector).forEach(([sector, d])=>{
+      const tr = document.createElement('tr');
+      const med = arr => arr.length ? Math.round(arr.reduce((a,b)=>a+b,0)/arr.length) : '—';
+      tr.innerHTML = `
+        <td><strong>${sector}</strong></td>
+        <td>${d.count}</td>
+        <td>${med(d.arr) !== '—' ? med(d.arr)+'M円' : '—'}</td>
+        <td>${med(d.growth) !== '—' ? med(d.growth)+'%' : '—'}</td>
+        <td>${med(d.raised) !== '—' ? med(d.raised)+'M円' : '—'}</td>
+        <td>—</td><td>—</td>`;
+      tbody.appendChild(tr);
+    });
+  } else {
+    // Fallback: use recent data
+    const bySector = {};
+    recent.forEach(r=>{
+      if(!r.sector) return;
+      if(!bySector[r.sector]) bySector[r.sector]={count:0,arr:[],team:[]};
+      bySector[r.sector].count++;
+      if(r.arr) bySector[r.sector].arr.push(r.arr);
+      if(r.team_size) bySector[r.sector].team.push(r.team_size);
+    });
+    Object.entries(bySector).forEach(([sector,d])=>{
+      const med = arr=>arr.length?Math.round(arr.reduce((a,b)=>a+b)/arr.length):'—';
+      const tr=document.createElement('tr');
+      tr.innerHTML=`<td><strong>${sector}</strong></td><td>${d.count}</td>
+        <td>${med(d.arr)!=='—'?med(d.arr)+'M円':'—'}</td>
+        <td>—</td><td>—</td>
+        <td>${med(d.team)!=='—'?med(d.team)+'人':'—'}</td><td>—</td>`;
+      tbody.appendChild(tr);
+    });
+  }
+  document.getElementById('bench-note').textContent = `${Object.keys(sectorCounts).length}セクター`;
+
+  // Recent table
+  const rtbody = document.getElementById('recent-tbody');
+  rtbody.innerHTML = '';
+  recent.forEach(r=>{
+    const tr = document.createElement('tr');
+    const stageClass = r.stage==='Seed'?'badge-seed':r.stage==='Pre-Seed'?'badge-preseed':'badge-early';
+    tr.innerHTML = `
+      <td>${new Date(r.created_at).toLocaleDateString('ja-JP',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</td>
+      <td>${r.sector||'—'}</td>
+      <td><span class="badge ${stageClass}">${r.stage||'—'}</span></td>
+      <td>${r.biz_model||'—'}</td>
+      <td>${r.raised!=null?r.raised+'M円':'—'}</td>
+      <td>${r.arr!=null?r.arr+'M円':'—'}</td>
+      <td>${r.team_size!=null?r.team_size+'人':'—'}</td>`;
+    rtbody.appendChild(tr);
+  });
+  document.getElementById('recent-count').textContent = `直近${recent.length}件`;
+}
+
+// ── CHART HELPERS ───────────────────────
+function drawDoughnut(id, labels, data, colors) {
+  if(charts[id]) charts[id].destroy();
+  const ctx = document.getElementById(id).getContext('2d');
+  charts[id] = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels, datasets:[{ data, backgroundColor: colors, borderWidth:2, borderColor:'#fff' }] },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ position:'right', labels:{ font:{size:11}, boxWidth:12, padding:10 } } },
+      cutout:'65%',
+    }
+  });
+}
+
+function drawBar(id, labels, data) {
+  if(charts[id]) charts[id].destroy();
+  const ctx = document.getElementById(id).getContext('2d');
+  charts[id] = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets:[{ data, backgroundColor:'rgba(94,234,212,0.7)', borderRadius:6, borderSkipped:false }] },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ display:false } },
+      scales:{ y:{ beginAtZero:true, ticks:{stepSize:1}, grid:{color:'rgba(0,0,0,.05)'} }, x:{ grid:{display:false} } }
+    }
+  });
+}
+</script>
+</body>
+</html>
