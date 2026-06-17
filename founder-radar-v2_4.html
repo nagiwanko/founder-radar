@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FOUNDER RADAR — 自分の立ち位置を、データで知る</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --black:#0A0A0A;--white:#FFFFFF;
+  --mint:#5EEAD4;--mint-dk:#0D9488;
+  --g400:#9CA3AF;--g600:#4B5563;--g800:#1F2937;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter','Hiragino Sans','Yu Gothic',sans-serif;background:var(--black);color:var(--white);min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:54px;background:rgba(10,10,10,0.93);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,0.06)}
+.nav-logo{display:flex;align-items:center;gap:9px}
+.logo-mark{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--mint),#818CF8);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--black)}
+.nav-name{font-size:13px;font-weight:700;letter-spacing:.08em}
+.nav-badge{font-size:10px;color:var(--mint);font-weight:600;padding:2px 8px;border-radius:10px;border:1px solid rgba(94,234,212,.3);background:rgba(94,234,212,.06)}
+
+/* HERO */
+#hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 24px 60px;text-align:center;position:relative;overflow:hidden}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(94,234,212,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(94,234,212,.04) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse 80% 60% at 50% 50%,black 30%,transparent 100%)}
+.hero-tag{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;letter-spacing:.12em;color:var(--mint);text-transform:uppercase;padding:6px 14px;border-radius:20px;border:1px solid rgba(94,234,212,.25);background:rgba(94,234,212,.06);margin-bottom:28px}
+.hero-tag::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--mint);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
+h1{font-size:clamp(34px,6vw,66px);font-weight:900;line-height:1.08;letter-spacing:-.03em;margin-bottom:22px}
+h1 em{font-style:normal;background:linear-gradient(135deg,var(--mint),#818CF8);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:16px;color:var(--g400);max-width:500px;line-height:1.7;margin-bottom:36px}
+.hero-cta{display:inline-flex;align-items:center;padding:13px 30px;border-radius:12px;border:none;cursor:pointer;font-size:15px;font-weight:700;font-family:inherit;background:var(--mint);color:var(--black);transition:transform .15s,box-shadow .15s;text-decoration:none}
+.hero-cta:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(94,234,212,.25)}
+.hero-stats{display:flex;gap:40px;margin-top:52px;padding-top:36px;border-top:1px solid rgba(255,255,255,.08)}
+.hero-stat-num{font-size:26px;font-weight:800;color:var(--mint);text-align:center}
+.hero-stat-label{font-size:11px;color:var(--g400);margin-top:2px;text-align:center}
+
+/* FORM SECTION */
+#form-section{background:#111;border-top:1px solid rgba(255,255,255,.06)}
+#form-section section{max-width:680px;margin:0 auto;padding:72px 24px}
+.section-eyebrow{font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--mint);text-transform:uppercase;margin-bottom:12px}
+.section-title{font-size:clamp(22px,4vw,34px);font-weight:800;line-height:1.2;letter-spacing:-.02em;margin-bottom:14px}
+.section-body{font-size:15px;color:var(--g400);line-height:1.7}
+.form-card{background:#181818;border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:36px;margin-top:36px}
+
+/* Step bar */
+.steps{display:flex;align-items:center;gap:6px;margin-bottom:32px;overflow-x:auto;padding-bottom:2px}
+.step{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:600;white-space:nowrap}
+.step-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;background:rgba(255,255,255,.08);color:var(--g400);transition:all .2s;flex-shrink:0}
+.step.active .step-num{background:var(--mint);color:var(--black)}
+.step.done .step-num{background:var(--mint-dk);color:#fff}
+.step-label{color:var(--g400)}
+.step.active .step-label{color:#fff}
+.step-div{flex:1;min-width:16px;height:1px;background:rgba(255,255,255,.08)}
+
+/* Fields */
+.field-group{margin-bottom:24px}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+label{display:block;font-size:12px;font-weight:600;color:var(--g400);margin-bottom:7px;letter-spacing:.04em}
+.field-hint{font-size:11px;color:#555;margin-top:4px;line-height:1.5}
+input[type=text],input[type=number],select,textarea{width:100%;padding:10px 13px;background:#222;border:1.5px solid rgba(255,255,255,.1);border-radius:10px;color:#fff;font-size:14px;font-family:inherit;transition:border-color .15s,background .15s;outline:none;appearance:none}
+input:focus,select:focus,textarea:focus{border-color:var(--mint);background:#1c1c1c}
+select option{background:#222}
+.input-with-unit{position:relative}
+.input-with-unit input{padding-right:50px}
+.input-unit{position:absolute;right:13px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--g400);font-weight:500;pointer-events:none}
+
+/* Chips */
+.chip-group{display:flex;flex-wrap:wrap;gap:7px}
+.chip{padding:7px 13px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:500;font-family:inherit;border:1.5px solid rgba(255,255,255,.12);background:transparent;color:var(--g400);transition:all .15s}
+.chip:hover{border-color:rgba(94,234,212,.4);color:#fff}
+.chip.selected{border-color:var(--mint);color:var(--mint);background:rgba(94,234,212,.08)}
+
+/* BizModel cards */
+.biz-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.biz-card{padding:14px 16px;border-radius:12px;cursor:pointer;border:1.5px solid rgba(255,255,255,.1);background:transparent;text-align:left;transition:all .15s;font-family:inherit}
+.biz-card:hover{border-color:rgba(94,234,212,.35);background:rgba(94,234,212,.04)}
+.biz-card.selected{border-color:var(--mint);background:rgba(94,234,212,.08)}
+.biz-card-icon{font-size:20px;margin-bottom:6px}
+.biz-card-title{font-size:13px;font-weight:700;color:#fff;margin-bottom:3px}
+.biz-card-desc{font-size:11px;color:var(--g400);line-height:1.4}
+
+/* Optional badge */
+.opt{display:inline-block;font-size:9px;color:#555;padding:1px 5px;border-radius:4px;border:1px solid #333;margin-left:5px;font-weight:400;vertical-align:middle}
+
+/* Buttons */
+.btn-primary{width:100%;padding:12px;border-radius:12px;border:none;cursor:pointer;font-size:14px;font-weight:700;font-family:inherit;background:var(--mint);color:var(--black);transition:transform .15s,box-shadow .15s,opacity .15s}
+.btn-primary:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 20px rgba(94,234,212,.2)}
+.btn-primary:disabled{opacity:.35;cursor:default}
+.btn-secondary{background:transparent;border:1.5px solid rgba(255,255,255,.15);color:var(--g400);border-radius:12px;padding:10px;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer;width:100%;transition:all .15s}
+.btn-secondary:hover{border-color:rgba(255,255,255,.3);color:#fff}
+.btn-row{display:grid;grid-template-columns:1fr 2fr;gap:10px;margin-top:6px}
+.privacy-note{text-align:center;font-size:11px;color:#3a3a3a;margin-top:14px;line-height:1.6}
+.privacy-note span{color:var(--mint-dk)}
+
+/* Section divider in form */
+.form-divider{height:1px;background:rgba(255,255,255,.07);margin:28px 0}
+.form-section-label{font-size:10px;font-weight:700;letter-spacing:.12em;color:#444;text-transform:uppercase;margin-bottom:16px}
+
+/* RESULT */
+#result-section{display:none;background:#0D0D0D;border-top:1px solid rgba(255,255,255,.06)}
+#result-section.visible{display:block}
+#result-section section{max-width:760px;margin:0 auto;padding:72px 24px}
+
+.score-hero{background:linear-gradient(135deg,#141414,#1a1a1a);border:1px solid rgba(255,255,255,.08);border-radius:20px;padding:32px;display:grid;grid-template-columns:auto 1fr;gap:28px;align-items:center;margin-bottom:24px}
+.score-circle{width:104px;height:104px;border-radius:50%;border:3px solid rgba(94,234,212,.15);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;flex-shrink:0}
+.score-circle svg{position:absolute;inset:-3px;width:calc(100% + 6px);height:calc(100% + 6px)}
+.score-num{font-size:36px;font-weight:900;color:var(--mint);line-height:1}
+.score-denom{font-size:11px;color:var(--g400)}
+.score-company{font-size:12px;color:var(--g400);margin-bottom:4px}
+.score-rank-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:8px;font-size:12px;font-weight:700;margin-bottom:10px}
+.score-comment{font-size:14px;color:var(--g400);line-height:1.65}
+
+/* Metric cards */
+.metrics-grid{display:flex;flex-direction:column;gap:12px;margin-bottom:24px}
+.metric-card{background:#141414;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:18px 20px;transition:border-color .15s}
+.metric-card:hover{border-color:rgba(94,234,212,.18)}
+.metric-card.skipped{opacity:.38}
+.metric-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.metric-label{font-size:13px;font-weight:600}
+.metric-sub{font-size:11px;color:var(--g400);margin-top:2px}
+.metric-right{display:flex;align-items:center;gap:8px}
+.metric-val{font-size:17px;font-weight:800}
+.rank-pill{font-size:11px;font-weight:700;padding:3px 8px;border-radius:7px}
+.track-bg{height:8px;border-radius:4px;background:linear-gradient(to right,#1f2937,#065f46 40%,#059669 70%,#34d399);position:relative}
+.track-marker{position:absolute;top:50%;transform:translate(-50%,-50%);width:17px;height:17px;border-radius:50%;background:#fff;border:3px solid var(--black);box-shadow:0 0 0 2px var(--mint),0 2px 6px rgba(0,0,0,.5);transition:left .7s cubic-bezier(.34,1.56,.64,1);z-index:2}
+.track-labels{display:flex;justify-content:space-between;margin-top:5px;font-size:10px;color:#444}
+
+/* Result CTA */
+.result-cta-box{background:linear-gradient(135deg,rgba(94,234,212,.06),rgba(129,140,248,.04));border:1px solid rgba(94,234,212,.15);border-radius:20px;padding:28px;text-align:center}
+.result-cta-box h3{font-size:19px;font-weight:800;margin-bottom:8px}
+.result-cta-box p{font-size:13px;color:var(--g400);line-height:1.6;margin-bottom:20px}
+.result-cta-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.btn-outline{padding:9px 20px;border-radius:10px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;border:1.5px solid rgba(255,255,255,.15);background:transparent;color:var(--g400);transition:all .15s}
+.btn-outline:hover{border-color:var(--mint);color:var(--mint)}
+.btn-filled{padding:9px 20px;border-radius:10px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;border:none;background:var(--mint);color:var(--black);transition:all .15s}
+.btn-filled:hover{box-shadow:0 4px 16px rgba(94,234,212,.2);transform:translateY(-1px)}
+
+footer{text-align:center;padding:36px 24px;border-top:1px solid rgba(255,255,255,.06);font-size:12px;color:#2a2a2a}
+.hidden{display:none!important}
+@media(max-width:580px){
+  .field-row{grid-template-columns:1fr}
+  .biz-grid{grid-template-columns:1fr}
+  .score-hero{grid-template-columns:1fr;text-align:center}
+  .score-circle{margin:0 auto}
+  .hero-stats{gap:24px}
+  .btn-row{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">
+    <div class="logo-mark">FR</div>
+    <span class="nav-name">FOUNDER RADAR</span>
+  </div>
+  <div class="nav-badge">Seed / Early 特化</div>
+</nav>
+
+<!-- HERO -->
+<div id="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-tag">匿名ベンチマーク</div>
+  <h1>自分の立ち位置を、<br><em>データで知る。</em></h1>
+  <p class="hero-sub">売上ゼロでも、受託でも、SaaSでも。ビジネスモデルに関わらず、同ステージの起業家と比較できます。</p>
+  <a href="#form-section" class="hero-cta">いますぐ試す — 無料</a>
+  <div class="hero-stats">
+    <div><div class="hero-stat-num">全</div><div class="hero-stat-label">業種対応</div></div>
+    <div><div class="hero-stat-num">完全</div><div class="hero-stat-label">匿名</div></div>
+    <div><div class="hero-stat-num">3分</div><div class="hero-stat-label">で完了</div></div>
+  </div>
+</div>
+
+<!-- FORM -->
+<div id="form-section">
+<section>
+  <div class="section-eyebrow" id="eyebrow">Step 1 of 3</div>
+  <h2 class="section-title">自社の情報を入力</h2>
+  <p class="section-body">入力したデータは統計集計のみに使用されます。個社を特定できる形では一切表示されません。</p>
+
+  <div class="form-card">
+    <div class="steps" id="step-bar">
+      <div class="step active" id="si1"><div class="step-num">1</div><div class="step-label">基本情報</div></div>
+      <div class="step-div"></div>
+      <div class="step" id="si2"><div class="step-num">2</div><div class="step-label">ビジネスモデル</div></div>
+      <div class="step-div"></div>
+      <div class="step" id="si3"><div class="step-num">3</div><div class="step-label">業績データ</div></div>
+    </div>
+
+    <!-- ── STEP 1: 基本情報 ── -->
+    <div id="step1">
+      <div class="field-group">
+        <label>会社名 <span class="opt">任意</span></label>
+        <input type="text" id="company" placeholder="○○株式会社（空欄でも可）">
+      </div>
+      <div class="field-group">
+        <label>セクター</label>
+        <div class="chip-group" id="sector-chips">
+          <button class="chip" data-val="Healthcare AI">Healthcare AI</button>
+          <button class="chip" data-val="FinTech">FinTech</button>
+          <button class="chip" data-val="Robotics / ハード">Robotics / ハード</button>
+          <button class="chip" data-val="Real Estate DX">Real Estate DX</button>
+          <button class="chip" data-val="Deep Tech">Deep Tech</button>
+          <button class="chip" data-val="HR Tech">HR Tech</button>
+          <button class="chip" data-val="EdTech">EdTech</button>
+          <button class="chip" data-val="AgriTech">AgriTech</button>
+          <button class="chip" data-val="その他">その他</button>
+        </div>
+      </div>
+      <div class="field-group">
+        <label>ステージ</label>
+        <div class="chip-group" id="stage-chips">
+          <button class="chip" data-val="Pre-Seed">Pre-Seed</button>
+          <button class="chip" data-val="Seed">Seed</button>
+          <button class="chip" data-val="Early（Series A前）">Early（Series A前）</button>
+        </div>
+      </div>
+      <div class="field-group">
+        <label>設立からの経過</label>
+        <div class="chip-group" id="age-chips">
+          <button class="chip" data-val="6ヶ月未満">6ヶ月未満</button>
+          <button class="chip" data-val="6〜12ヶ月">6〜12ヶ月</button>
+          <button class="chip" data-val="1〜2年">1〜2年</button>
+          <button class="chip" data-val="2〜3年">2〜3年</button>
+          <button class="chip" data-val="3年以上">3年以上</button>
+        </div>
+      </div>
+      <button class="btn-primary" id="next1-btn" disabled onclick="goStep(2)">ビジネスモデルを選ぶ →</button>
+      <p class="privacy-note">入力データは<span>集計のみ</span>に使用。個社の数値は外部に出ません。</p>
+    </div>
+
+    <!-- ── STEP 2: ビジネスモデル ── -->
+    <div id="step2" class="hidden">
+      <div class="field-group">
+        <label>ビジネスモデルを選んでください</label>
+        <div class="field-hint" style="margin-bottom:14px">最も近いものを1つ選択。指標の質問がこれで変わります。</div>
+        <div class="biz-grid" id="biz-cards">
+          <button class="biz-card" data-val="saas">
+            <div class="biz-card-icon">📦</div>
+            <div class="biz-card-title">SaaS / サブスク</div>
+            <div class="biz-card-desc">月次・年次の定額課金モデル</div>
+          </button>
+          <button class="biz-card" data-val="marketplace">
+            <div class="biz-card-icon">🔄</div>
+            <div class="biz-card-title">マーケットプレイス</div>
+            <div class="biz-card-desc">GMV・テイクレート型</div>
+          </button>
+          <button class="biz-card" data-val="hardware">
+            <div class="biz-card-icon">🤖</div>
+            <div class="biz-card-title">ハード販売</div>
+            <div class="biz-card-desc">製品販売＋保守・ライセンス</div>
+          </button>
+          <button class="biz-card" data-val="project">
+            <div class="biz-card-icon">🏗️</div>
+            <div class="biz-card-title">受託・プロジェクト型</div>
+            <div class="biz-card-desc">案件単位の売上、受託開発中心</div>
+          </button>
+          <button class="biz-card" data-val="presales">
+            <div class="biz-card-icon">🔬</div>
+            <div class="biz-card-title">開発中（プレ売上）</div>
+            <div class="biz-card-desc">まだ売上なし、研究・開発フェーズ</div>
+          </button>
+          <button class="biz-card" data-val="other">
+            <div class="biz-card-icon">⚡</div>
+            <div class="biz-card-title">その他・複合型</div>
+            <div class="biz-card-desc">複数モデルの組み合わせ等</div>
+          </button>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="goStep(1)">← 戻る</button>
+        <button class="btn-primary" id="next2-btn" disabled onclick="goStep(3)">業績データを入力 →</button>
+      </div>
+      <p class="privacy-note">入力データは<span>集計のみ</span>に使用。</p>
+    </div>
+
+    <!-- ── STEP 3: 業績データ ── -->
+    <div id="step3" class="hidden">
+
+      <!-- 共通指標 -->
+      <div class="form-section-label">全員が答える指標</div>
+
+      <div class="field-group">
+        <div class="field-row">
+          <div>
+            <label>累計調達額 <span class="opt">任意</span></label>
+            <div class="input-with-unit">
+              <input type="number" id="raised" placeholder="80" min="0">
+              <span class="input-unit">M円</span>
+            </div>
+            <div class="field-hint">未調達なら0</div>
+          </div>
+          <div>
+            <label>月次バーンレート <span class="opt">任意</span></label>
+            <div class="input-with-unit">
+              <input type="number" id="burn" placeholder="5" min="0">
+              <span class="input-unit">M円/月</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <div class="field-row">
+          <div>
+            <label>ランウェイ <span class="opt">任意</span></label>
+            <div class="input-with-unit">
+              <input type="number" id="runway" placeholder="18" min="0">
+              <span class="input-unit">ヶ月</span>
+            </div>
+          </div>
+          <div>
+            <label>チーム人数（正社員） <span class="opt">任意</span></label>
+            <div class="input-with-unit">
+              <input type="number" id="team" placeholder="8" min="1">
+              <span class="input-unit">人</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <div class="field-row">
+          <div>
+            <label>顧客・ユーザー数 <span class="opt">任意</span></label>
+            <div class="input-with-unit">
+              <input type="number" id="customers" placeholder="25" min="0">
+              <span class="input-unit">社/人</span>
+            </div>
+          </div>
+          <div>
+            <label>創業→初収益まで <span class="opt">任意</span></label>
+            <div class="input-with-unit">
+              <input type="number" id="ttf" placeholder="7" min="0">
+              <span class="input-unit">ヶ月</span>
+            </div>
+            <div class="field-hint">プレ売上の場合は空欄で</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- モデル別指標（JSで動的表示） -->
+      <div class="form-divider"></div>
+      <div class="form-section-label" id="model-specific-label"></div>
+      <div id="model-specific-fields"></div>
+
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="goStep(2)">← 戻る</button>
+        <button class="btn-primary" onclick="showResult()">ベンチマークを見る →</button>
+      </div>
+      <p class="privacy-note">入力データは<span>集計のみ</span>に使用。個社の数値は外部に出ません。</p>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- RESULT -->
+<div id="result-section">
+<section>
+  <div class="section-eyebrow">ベンチマーク結果</div>
+  <h2 class="section-title">あなたの立ち位置</h2>
+  <p id="save-status" style="font-size:11px;margin-bottom:16px;transition:opacity 1s;opacity:0"></p>
+
+  <div class="score-hero">
+    <div class="score-circle">
+      <svg viewBox="0 0 120 120" fill="none">
+        <circle cx="60" cy="60" r="54" stroke="rgba(94,234,212,0.12)" stroke-width="6"/>
+        <circle cx="60" cy="60" r="54" stroke="url(#sg)" stroke-width="6" stroke-linecap="round"
+          stroke-dasharray="339.3" id="score-arc" stroke-dashoffset="339.3" transform="rotate(-90 60 60)"/>
+        <defs><linearGradient id="sg" x1="0" y1="0" x2="120" y2="120" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#5EEAD4"/><stop offset="100%" stop-color="#818CF8"/>
+        </linearGradient></defs>
+      </svg>
+      <div class="score-num" id="score-num">—</div>
+      <div class="score-denom">/ 100</div>
+    </div>
+    <div>
+      <div class="score-company" id="score-company"></div>
+      <div class="score-rank-badge" id="score-badge"></div>
+      <div class="score-comment" id="score-comment"></div>
+    </div>
+  </div>
+
+  <div class="metrics-grid" id="metrics-grid"></div>
+
+  <div class="result-cta-box">
+    <h3>数字の先にある、出会いへ。</h3>
+    <p>FOUNDER RADARは現在β版を準備中です。<br>登録しておくと、VCからのアプローチ受付・成長トラッキングが利用できるようになります。</p>
+    <div class="result-cta-btns">
+      <button class="btn-outline" onclick="goStep(1);document.getElementById('form-section').scrollIntoView({behavior:'smooth'})">入力し直す</button>
+      <button class="btn-filled">β版の通知を受け取る →</button>
+    </div>
+  </div>
+</section>
+</div>
+
+<footer>© 2025 FOUNDER RADAR — データは匿名で集計のみに使用されます</footer>
+
+<script>
+// ── STATE ──────────────────────────────
+const S = {
+  company:'', sector:'', stage:'', age:'', biz:'',
+  raised:null, burn:null, runway:null, team:null, customers:null, ttf:null,
+  // model-specific
+  arr:null, churn:null, growth:null,
+  gmv:null, take:null,
+  units:null, margin:null,
+  projectRev:null, utilRate:null,
+  milestone:null, interviews:null,
+};
+
+// ── BENCHMARK DATA ─────────────────────
+// 共通指標
+const BM_COMMON = {
+  raised: {p25:20, p50:80,  p75:200, p90:500,  unit:'M円',  higher:true,  label:'累計調達額'},
+  burn:   {p25:1,  p50:4,   p75:9,   p90:18,   unit:'M円/月',higher:false, label:'月次バーン'},
+  runway: {p25:8,  p50:14,  p75:22,  p90:36,   unit:'ヶ月', higher:true,  label:'ランウェイ'},
+  team:   {p25:3,  p50:8,   p75:16,  p90:28,   unit:'人',   higher:true,  label:'チーム人数'},
+  customers:{p25:5,p50:20,  p75:60,  p90:150,  unit:'社/人', higher:true,  label:'顧客・ユーザー数'},
+  ttf:    {p25:3,  p50:7,   p75:14,  p90:24,   unit:'ヶ月', higher:false, label:'初収益まで'},
+};
+
+// モデル別指標
+const BM_MODEL = {
+  saas: {
+    arr:    {p25:8,  p50:24,  p75:60,  p90:150, unit:'M円', higher:true,  label:'ARR'},
+    growth: {p25:10, p50:22,  p75:40,  p90:70,  unit:'%',   higher:true,  label:'MoM成長率'},
+    churn:  {p25:0.5,p50:1.2, p75:3.0, p90:5.5, unit:'%',   higher:false, label:'月次チャーン'},
+  },
+  marketplace: {
+    gmv:    {p25:50, p50:200, p75:600, p90:2000,unit:'M円', higher:true,  label:'月次GMV'},
+    take:   {p25:5,  p50:12,  p75:20,  p90:30,  unit:'%',   higher:true,  label:'テイクレート'},
+    growth: {p25:15, p50:28,  p75:50,  p90:80,  unit:'%',   higher:true,  label:'MoM成長率'},
+  },
+  hardware: {
+    units:  {p25:10, p50:50,  p75:200, p90:600, unit:'台',  higher:true,  label:'累計販売台数'},
+    margin: {p25:15, p50:35,  p75:55,  p90:70,  unit:'%',   higher:true,  label:'粗利率'},
+    arr:    {p25:5,  p50:20,  p75:60,  p90:150, unit:'M円', higher:true,  label:'保守・ライセンスARR'},
+  },
+  project: {
+    projectRev:{p25:10,p50:40, p75:100, p90:250, unit:'M円', higher:true,  label:'直近12ヶ月売上'},
+    utilRate:  {p25:40,p50:65, p75:80,  p90:90,  unit:'%',   higher:true,  label:'稼働率'},
+    growth:    {p25:5, p50:15, p75:30,  p90:60,  unit:'%',   higher:true,  label:'YoY成長率'},
+  },
+  presales: {
+    interviews:{p25:10,p50:30, p75:60,  p90:120, unit:'件',  higher:true,  label:'顧客インタビュー数'},
+    milestone: {p25:2, p50:4,  p75:7,   p90:10,  unit:'個',  higher:true,  label:'マイルストーン達成数'},
+  },
+  other: {
+    arr:    {p25:5,  p50:20,  p75:60,  p90:150, unit:'M円', higher:true,  label:'売上（年換算）'},
+    growth: {p25:8,  p50:18,  p75:35,  p90:60,  unit:'%',   higher:true,  label:'成長率（MoMまたはYoY）'},
+  },
+};
+
+// モデル別フォームHTML
+const MODEL_FIELDS = {
+  saas:`
+    <div class="field-group"><div class="field-row">
+      <div><label>ARR <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="arr" placeholder="24" min="0"><span class="input-unit">M円</span></div></div>
+      <div><label>MoM成長率 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="growth" placeholder="18" min="0"><span class="input-unit">%</span></div></div>
+    </div></div>
+    <div class="field-group"><div style="max-width:300px">
+      <label>月次チャーン率 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="churn" placeholder="1.2" min="0" step="0.1"><span class="input-unit">%</span></div>
+    </div></div>`,
+  marketplace:`
+    <div class="field-group"><div class="field-row">
+      <div><label>月次GMV <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="gmv" placeholder="200" min="0"><span class="input-unit">M円</span></div></div>
+      <div><label>テイクレート <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="take" placeholder="12" min="0" step="0.1"><span class="input-unit">%</span></div></div>
+    </div></div>
+    <div class="field-group"><div style="max-width:300px">
+      <label>MoM成長率 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="growth" placeholder="25" min="0"><span class="input-unit">%</span></div>
+    </div></div>`,
+  hardware:`
+    <div class="field-group"><div class="field-row">
+      <div><label>累計販売台数 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="units" placeholder="50" min="0"><span class="input-unit">台</span></div></div>
+      <div><label>粗利率 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="margin" placeholder="35" min="0" max="100"><span class="input-unit">%</span></div></div>
+    </div></div>
+    <div class="field-group"><div style="max-width:300px">
+      <label>保守・ライセンスARR <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="arr" placeholder="20" min="0"><span class="input-unit">M円</span></div>
+    </div></div>`,
+  project:`
+    <div class="field-group"><div class="field-row">
+      <div><label>直近12ヶ月売上 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="projectRev" placeholder="40" min="0"><span class="input-unit">M円</span></div></div>
+      <div><label>稼働率 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="utilRate" placeholder="65" min="0" max="100"><span class="input-unit">%</span></div></div>
+    </div></div>
+    <div class="field-group"><div style="max-width:300px">
+      <label>YoY成長率 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="growth" placeholder="15" min="0"><span class="input-unit">%</span></div>
+    </div></div>`,
+  presales:`
+    <div class="field-hint" style="margin-bottom:16px;color:#666;font-size:12px">プレ売上フェーズの指標です。売上よりも検証の進み具合で比較します。</div>
+    <div class="field-group"><div class="field-row">
+      <div><label>顧客インタビュー数 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="interviews" placeholder="30" min="0"><span class="input-unit">件</span></div></div>
+      <div><label>マイルストーン達成数 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="milestone" placeholder="4" min="0"><span class="input-unit">個</span></div><div class="field-hint">PoC完了・特許出願・提携締結など</div></div>
+    </div></div>`,
+  other:`
+    <div class="field-group"><div class="field-row">
+      <div><label>売上（年換算） <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="arr" placeholder="20" min="0"><span class="input-unit">M円</span></div></div>
+      <div><label>成長率 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="growth" placeholder="18" min="0"><span class="input-unit">%</span></div><div class="field-hint">MoMまたはYoY、どちらでも</div></div>
+    </div></div>`,
+};
+
+const MODEL_LABELS = {
+  saas:'SaaS固有の指標', marketplace:'マーケットプレイス固有の指標',
+  hardware:'ハード販売固有の指標', project:'受託・プロジェクト固有の指標',
+  presales:'開発進捗の指標（売上の代わり）', other:'売上・成長指標',
+};
+
+// ── CHIP INIT ──────────────────────────
+function initChips(id, key, cb) {
+  document.getElementById(id).querySelectorAll('.chip').forEach(b => {
+    b.addEventListener('click', () => {
+      document.getElementById(id).querySelectorAll('.chip').forEach(x=>x.classList.remove('selected'));
+      b.classList.add('selected'); S[key] = b.dataset.val; if(cb) cb();
+    });
+  });
+}
+initChips('sector-chips','sector', validateS1);
+initChips('stage-chips', 'stage',  validateS1);
+initChips('age-chips',   'age',    validateS1);
+
+function validateS1() {
+  document.getElementById('next1-btn').disabled = !(S.sector && S.stage && S.age);
+}
+
+document.getElementById('biz-cards').querySelectorAll('.biz-card').forEach(b => {
+  b.addEventListener('click', () => {
+    document.getElementById('biz-cards').querySelectorAll('.biz-card').forEach(x=>x.classList.remove('selected'));
+    b.classList.add('selected'); S.biz = b.dataset.val;
+    document.getElementById('next2-btn').disabled = false;
+  });
+});
+
+// ── STEP NAV ───────────────────────────
+function goStep(n) {
+  if (n===2) S.company = document.getElementById('company').value.trim();
+  [1,2,3].forEach(i => {
+    document.getElementById('step'+i).classList.toggle('hidden', i!==n);
+    const si = document.getElementById('si'+i);
+    si.classList.toggle('active', i===n);
+    si.classList.toggle('done', i<n);
+  });
+  document.getElementById('eyebrow').textContent = `Step ${n} of 3`;
+  if (n===3) renderModelFields();
+  document.getElementById('form-section').scrollIntoView({behavior:'smooth'});
+}
+
+function renderModelFields() {
+  document.getElementById('model-specific-label').textContent = MODEL_LABELS[S.biz] || '';
+  document.getElementById('model-specific-fields').innerHTML = MODEL_FIELDS[S.biz] || '';
+}
+
+// ── PERCENTILE ─────────────────────────
+function getPct(v, d) {
+  if(v<=d.p25) return Math.round(v/d.p25*25);
+  if(v<=d.p50) return Math.round(25+(v-d.p25)/(d.p50-d.p25)*25);
+  if(v<=d.p75) return Math.round(50+(v-d.p50)/(d.p75-d.p50)*25);
+  if(v<=d.p90) return Math.round(75+(v-d.p75)/(d.p90-d.p75)*15);
+  return Math.min(99, Math.round(90+(v-d.p90)/d.p90*9));
+}
+function getRank(e) {
+  if(e>=75) return {label:'Top 25%',  color:'#0D9488',bg:'rgba(13,148,136,.12)'};
+  if(e>=50) return {label:'上位半分', color:'#3B82F6',bg:'rgba(59,130,246,.12)'};
+  if(e>=25) return {label:'中位',     color:'#F59E0B',bg:'rgba(245,158,11,.12)'};
+  return           {label:'下位25%',  color:'#EF4444',bg:'rgba(239,68,68,.12)'};
+}
+
+// ── COLLECT ────────────────────────────
+function collectNum(id) {
+  const el = document.getElementById(id);
+  if(!el) return null;
+  const v = el.value;
+  return v!=='' ? parseFloat(v) : null;
+}
+
+// ── SHOW RESULT ────────────────────────
+function showResult() {
+  // common
+  S.raised    = collectNum('raised');
+  S.burn      = collectNum('burn');
+  S.runway    = collectNum('runway');
+  S.team      = collectNum('team');
+  S.customers = collectNum('customers');
+  S.ttf       = collectNum('ttf');
+  // model-specific
+  ['arr','churn','growth','gmv','take','units','margin','projectRev','utilRate','milestone','interviews'].forEach(k=>{S[k]=collectNum(k)});
+
+  const bmModel = BM_MODEL[S.biz] || {};
+
+  // Build scored list
+  const allDefs = [
+    ...Object.entries(BM_COMMON).map(([k,d])=>({key:k,...d,val:S[k]})),
+    ...Object.entries(bmModel).map(([k,d])=>({key:k,...d,val:S[k]})),
+  ];
+  const scored = allDefs.filter(d=>d.val!==null).map(d=>{
+    const pct = getPct(d.val, d);
+    const eff = d.higher ? pct : 100-pct;
+    return {...d, pct, eff, rank:getRank(eff)};
+  });
+
+  const overall = scored.length>0
+    ? Math.round(scored.reduce((a,m)=>a+m.eff,0)/scored.length) : null;
+
+  // Score hero
+  const bizLabel = {saas:'SaaS',marketplace:'マーケットプレイス',hardware:'ハード',project:'受託',presales:'開発中',other:'その他'}[S.biz]||S.biz;
+  document.getElementById('score-company').textContent = `${S.company||'匿名の起業家'} · ${S.sector} · ${S.stage} · ${bizLabel}`;
+
+  if(overall!==null) {
+    document.getElementById('score-num').textContent = overall;
+    const r = getRank(overall);
+    const badge = document.getElementById('score-badge');
+    badge.textContent = r.label; badge.style.background=r.bg; badge.style.color=r.color;
+    const msg = S.biz==='presales'
+      ? (overall>=65?'検証の進み具合が同ステージの上位圏にあります。インタビュー数・マイルストーンともに良好です。'
+        :overall>=40?'検証は進んでいます。顧客インタビューをさらに積み上げることで仮説の精度が上がります。'
+        :'まだ初期段階です。まず顧客に会う数を増やすことが最優先です。')
+      : (overall>=75?`${S.sector}の${S.stage}期において上位パフォーマーです。VCからの注目度が高い水準にあります。`
+        :overall>=50?'同ステージ平均を上回っています。1〜2指標を強化するとTop 25%圏が見えてきます。'
+        :overall>=25?'同ステージの平均的な水準です。仮説検証のスピードを上げることが次のステージへの鍵です。'
+        :'まだ初期フェーズです。数値より「どの課題を解くか」の解像度を高めることが最優先です。');
+    document.getElementById('score-comment').textContent = msg;
+    const arc = document.getElementById('score-arc');
+    setTimeout(()=>{arc.style.transition='stroke-dashoffset 1.2s cubic-bezier(.34,1.56,.64,1)';arc.style.strokeDashoffset=339.3*(1-overall/100);},100);
+  } else {
+    document.getElementById('score-num').textContent='—';
+    document.getElementById('score-badge').textContent='データなし';
+    document.getElementById('score-comment').textContent='業績データを1つ以上入力すると結果が表示されます。';
+  }
+
+  // Metric cards
+  const grid = document.getElementById('metrics-grid');
+  grid.innerHTML='';
+  allDefs.forEach(d=>{
+    const hasVal = d.val!==null;
+    const sc = hasVal ? scored.find(s=>s.key===d.key) : null;
+    const card = document.createElement('div');
+    card.className='metric-card'+(hasVal?'':' skipped');
+    card.innerHTML=`
+      <div class="metric-top">
+        <div>
+          <div class="metric-label">${d.label}</div>
+          <div class="metric-sub">中央値 ${d.p50}${d.unit} · P75 ${d.p75}${d.unit}</div>
+        </div>
+        <div class="metric-right">
+          ${hasVal?`<div class="metric-val">${d.val}${d.unit}</div>`:'<div class="metric-val" style="color:var(--g400)">未入力</div>'}
+          ${sc?`<div class="rank-pill" style="background:${sc.rank.bg};color:${sc.rank.color}">${sc.rank.label}</div>`:''}
+        </div>
+      </div>
+      <div class="track-wrap">
+        <div class="track-bg">${hasVal?`<div class="track-marker" id="m-${d.key}" style="left:0%"></div>`:''}</div>
+        <div class="track-labels"><span>${d.higher?'低い':'多い'}</span><span>中央値</span><span style="color:var(--mint-dk)">${d.higher?'高い':'少ない'}</span></div>
+      </div>`;
+    grid.appendChild(card);
+    if(hasVal && sc) setTimeout(()=>{const m=document.getElementById('m-'+d.key);if(m)m.style.left=sc.pct+'%';},200);
+  });
+
+  const rs=document.getElementById('result-section');
+  rs.classList.add('visible');
+  setTimeout(()=>rs.scrollIntoView({behavior:'smooth'}),50);
+
+  // ── Supabase保存 ──────────────────────
+  saveToSupabase();
+}
+
+// ── SUPABASE CONFIG ────────────────────
+const SUPABASE_URL = 'https://rulkdsizgatzvndiwdzb.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1bGtkc2l6Z2F0enZuZGl3ZHpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2ODIwMzcsImV4cCI6MjA5NzI1ODAzN30.4iPa3teGkopItZ408Q6YWRihFeIqb2Eyj39toqGHT8o';
+
+async function saveToSupabase() {
+  const payload = {
+    sector:          S.sector       || null,
+    stage:           S.stage        || null,
+    age:             S.age          || null,
+    biz_model:       S.biz          || null,
+    raised:          S.raised,
+    burn:            S.burn,
+    runway:          S.runway,
+    team_size:       S.team         ? parseInt(S.team) : null,
+    customers:       S.customers    ? parseInt(S.customers) : null,
+    ttf:             S.ttf,
+    arr:             S.arr,
+    growth_rate:     S.growth,
+    churn_rate:      S.churn,
+    gmv:             S.gmv,
+    take_rate:       S.take,
+    units_sold:      S.units        ? parseInt(S.units) : null,
+    gross_margin:    S.margin,
+    project_rev:     S.projectRev,
+    util_rate:       S.utilRate,
+    milestone_count: S.milestone    ? parseInt(S.milestone) : null,
+    interview_count: S.interviews   ? parseInt(S.interviews) : null,
+  };
+
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/submissions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Prefer': 'return=minimal',
+      },
+      body: JSON.stringify(payload),
+    });
+    if (res.ok) {
+      console.log('✅ Supabase保存完了');
+      showSaveStatus('✓ データを匿名で記録しました', '#0D9488');
+    } else {
+      const err = await res.text();
+      console.warn('Supabase error:', err);
+      showSaveStatus('データの記録をスキップしました', '#555');
+    }
+  } catch(e) {
+    console.warn('Supabase fetch error:', e);
+    showSaveStatus('データの記録をスキップしました', '#555');
+  }
+}
+
+function showSaveStatus(msg, color) {
+  const el = document.getElementById('save-status');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.color = color;
+  el.style.opacity = '1';
+  setTimeout(()=>{ el.style.opacity='0'; }, 4000);
+}
+</script>
+</body>
+</html>
