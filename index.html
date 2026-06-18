@@ -247,11 +247,13 @@ footer{text-align:center;padding:36px 24px;border-top:1px solid rgba(255,255,255
             <div class="input-with-unit"><input type="number" id="debt_raised" placeholder="20" min="0"><span class="input-unit">百万円</span></div>
             <div class="field-hint">VCファイナンス以外の借入・融資</div>
           </div>
-          <div>
-            <label>補助金・助成金累計 <span class="opt">任意</span></label>
-            <div class="input-with-unit"><input type="number" id="grant_raised" placeholder="20" min="0"><span class="input-unit">百万円</span></div>
-            <div class="field-hint">VCファイナンス以外の借入・融資</div>
-          </div>
+        </div>
+      </div>
+      <div class="field-group">
+        <div style="max-width:300px">
+          <label>補助金・助成金累計 <span class="opt">任意</span></label>
+          <div class="input-with-unit"><input type="number" id="grant_raised" placeholder="5" min="0"><span class="input-unit">百万円</span></div>
+          <div class="field-hint">NEDO・JST・経産省等の補助金・助成金</div>
         </div>
       </div>
 
@@ -259,12 +261,12 @@ footer{text-align:center;padding:36px 24px;border-top:1px solid rgba(255,255,255
       <div class="field-group">
         <div class="field-row">
           <div>
-            <label>売上高/年 <span class="opt">任意</span></label>
-            <div class="input-with-unit"><input type="number" id="annual_revenue" placeholder="120" min="0"><span class="input-unit">百万円</span></div>
+            <label>売上高 <span class="opt">任意</span></label>
+            <div class="input-with-unit"><input type="number" id="annual_revenue" placeholder="120" min="0"><span class="input-unit">百万円/年</span></div>
           </div>
           <div>
-            <label>営業利益/年 <span class="opt">任意</span></label>
-            <div class="input-with-unit"><input type="number" id="operating_profit" placeholder="-10" ><span class="input-unit">百万円</span></div>
+            <label>営業利益 <span class="opt">任意</span></label>
+            <div class="input-with-unit"><input type="number" id="operating_profit" placeholder="-10" ><span class="input-unit">百万円/年</span></div>
             <div class="field-hint">赤字の場合はマイナスで入力</div>
           </div>
         </div>
@@ -364,13 +366,14 @@ footer{text-align:center;padding:36px 24px;border-top:1px solid rgba(255,255,255
 const SUPABASE_URL='https://rulkdsizgatzvndiwdzb.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1bGtkc2l6Z2F0enZuZGl3ZHpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2ODIwMzcsImV4cCI6MjA5NzI1ODAzN30.4iPa3teGkopItZ408Q6YWRihFeIqb2Eyj39toqGHT8o';
 
-const S={company:'',company_url:'',sector:'',stage:'',age:'',biz:'',equity_raised:null,debt_raised:null,annual_revenue:null,operating_profit:null,burn:null,runway:null,team:null,submitter_email:'',arr:null,growth:null,churn:null,gmv:null,take:null,units:null,margin:null,projectRev:null,utilRate:null,milestone:null,interviews:null};
+const S={company:'',company_url:'',sector:'',stage:'',age:'',biz:'',equity_raised:null,debt_raised:null,grant_raised:null,annual_revenue:null,operating_profit:null,burn:null,runway:null,team:null,submitter_email:'',arr:null,growth:null,churn:null,gmv:null,take:null,units:null,margin:null,projectRev:null,utilRate:null,milestone:null,interviews:null};
 
 const BM_COMMON={
   equity_raised:{p25:20,p50:80,p75:200,p90:500,unit:'百万円',higher:true,label:'エクイティ調達累計'},
   debt_raised:{p25:5,p50:20,p75:60,p90:150,unit:'百万円',higher:true,label:'デット調達累計'},
-  annual_revenue:{p25:30,p50:100,p75:300,p90:800,unit:'百万円',higher:true,label:'年間売上高'},
-  operating_profit:{p25:-20,p50:-5,p75:5,p90:30,unit:'百万円',higher:true,label:'営業利益'},
+  grant_raised:{p25:1,p50:5,p75:15,p90:50,unit:'百万円',higher:true,label:'補助金・助成金累計'},
+  annual_revenue:{p25:30,p50:100,p75:300,p90:800,unit:'百万円/年',higher:true,label:'売上高'},
+  operating_profit:{p25:-20,p50:-5,p75:5,p90:30,unit:'百万円/年',higher:true,label:'営業利益'},
   burn:{p25:1,p50:4,p75:9,p90:18,unit:'百万円/月',higher:false,label:'月次バーン'},
   runway:{p25:8,p50:14,p75:22,p90:36,unit:'ヶ月',higher:true,label:'ランウェイ'},
   team:{p25:3,p50:8,p75:16,p90:28,unit:'人',higher:true,label:'チーム人数'},
@@ -378,19 +381,19 @@ const BM_COMMON={
 const BM_MODEL={
   saas:{arr:{p25:8,p50:24,p75:60,p90:150,unit:'百万円',higher:true,label:'ARR'},growth:{p25:10,p50:22,p75:40,p90:70,unit:'%',higher:true,label:'MoM成長率'},churn:{p25:0.5,p50:1.2,p75:3.0,p90:5.5,unit:'%',higher:false,label:'月次チャーン'}},
   marketplace:{gmv:{p25:50,p50:200,p75:600,p90:2000,unit:'百万円',higher:true,label:'月次GMV'},take:{p25:5,p50:12,p75:20,p90:30,unit:'%',higher:true,label:'テイクレート'},growth:{p25:15,p50:28,p75:50,p90:80,unit:'%',higher:true,label:'MoM成長率'}},
-  hardware:{units:{p25:10,p50:50,p75:200,p90:600,unit:'台',higher:true,label:'累計販売台数'},margin:{p25:15,p50:35,p75:55,p90:70,unit:'%',higher:true,label:'粗利率'},arr:{p25:5,p50:20,p75:60,p90:150,unit:'M円',higher:true,label:'保守ARR'}},
+  hardware:{units:{p25:10,p50:50,p75:200,p90:600,unit:'台',higher:true,label:'累計販売台数'},margin:{p25:15,p50:35,p75:55,p90:70,unit:'%',higher:true,label:'粗利率'},arr:{p25:5,p50:20,p75:60,p90:150,unit:'百万円',higher:true,label:'保守ARR'}},
   project:{projectRev:{p25:10,p50:40,p75:100,p90:250,unit:'百万円',higher:true,label:'直近12ヶ月売上'},utilRate:{p25:40,p50:65,p75:80,p90:90,unit:'%',higher:true,label:'稼働率'},growth:{p25:5,p50:15,p75:30,p90:60,unit:'%',higher:true,label:'YoY成長率'}},
   presales:{interviews:{p25:10,p50:30,p75:60,p90:120,unit:'件',higher:true,label:'顧客インタビュー数'},milestone:{p25:2,p50:4,p75:7,p90:10,unit:'個',higher:true,label:'マイルストーン達成数'}},
   other:{arr:{p25:5,p50:20,p75:60,p90:150,unit:'百万円',higher:true,label:'売上（年換算）'},growth:{p25:8,p50:18,p75:35,p90:60,unit:'%',higher:true,label:'成長率'}},
 };
 const MODEL_LABELS={saas:'SaaS固有の指標',marketplace:'マーケットプレイス固有の指標',hardware:'ハード販売固有の指標',project:'受託・プロジェクト固有の指標',presales:'開発進捗の指標',other:'売上・成長指標'};
 const MODEL_FIELDS={
-  saas:`<div class="field-group"><div class="field-row"><div><label>ARR <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="arr" placeholder="24" min="0"><span class="input-unit">M円</span></div></div><div><label>MoM成長率 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="growth" placeholder="18" min="0"><span class="input-unit">%</span></div></div></div></div><div class="field-group"><div style="max-width:300px"><label>月次チャーン率 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="churn" placeholder="1.2" min="0" step="0.1"><span class="input-unit">%</span></div></div></div>`,
-  marketplace:`<div class="field-group"><div class="field-row"><div><label>月次GMV <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="gmv" placeholder="200" min="0"><span class="input-unit">M円</span></div></div><div><label>テイクレート <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="take" placeholder="12" min="0" step="0.1"><span class="input-unit">%</span></div></div></div></div><div class="field-group"><div style="max-width:300px"><label>MoM成長率 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="growth" placeholder="25" min="0"><span class="input-unit">%</span></div></div></div>`,
-  hardware:`<div class="field-group"><div class="field-row"><div><label>累計販売台数 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="units" placeholder="50" min="0"><span class="input-unit">台</span></div></div><div><label>粗利率 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="margin" placeholder="35" min="0" max="100"><span class="input-unit">%</span></div></div></div></div><div class="field-group"><div style="max-width:300px"><label>保守・ライセンスARR <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="arr" placeholder="20" min="0"><span class="input-unit">M円</span></div></div></div>`,
-  project:`<div class="field-group"><div class="field-row"><div><label>直近12ヶ月売上 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="projectRev" placeholder="40" min="0"><span class="input-unit">M円</span></div></div><div><label>稼働率 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="utilRate" placeholder="65" min="0" max="100"><span class="input-unit">%</span></div></div></div></div><div class="field-group"><div style="max-width:300px"><label>YoY成長率 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="growth" placeholder="15" min="0"><span class="input-unit">%</span></div></div></div>`,
+  saas:`<div class="field-group"><div class="field-row"><div><label>ARR <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="arr" placeholder="24" min="0"><span class="input-unit">百万円</span></div></div><div><label>MoM成長率 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="growth" placeholder="18" min="0"><span class="input-unit">%</span></div></div></div></div><div class="field-group"><div style="max-width:300px"><label>月次チャーン率 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="churn" placeholder="1.2" min="0" step="0.1"><span class="input-unit">%</span></div></div></div>`,
+  marketplace:`<div class="field-group"><div class="field-row"><div><label>月次GMV <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="gmv" placeholder="200" min="0"><span class="input-unit">百万円</span></div></div><div><label>テイクレート <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="take" placeholder="12" min="0" step="0.1"><span class="input-unit">%</span></div></div></div></div><div class="field-group"><div style="max-width:300px"><label>MoM成長率 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="growth" placeholder="25" min="0"><span class="input-unit">%</span></div></div></div>`,
+  hardware:`<div class="field-group"><div class="field-row"><div><label>累計販売台数 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="units" placeholder="50" min="0"><span class="input-unit">台</span></div></div><div><label>粗利率 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="margin" placeholder="35" min="0" max="100"><span class="input-unit">%</span></div></div></div></div><div class="field-group"><div style="max-width:300px"><label>保守・ライセンスARR <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="arr" placeholder="20" min="0"><span class="input-unit">百万円</span></div></div></div>`,
+  project:`<div class="field-group"><div class="field-row"><div><label>直近12ヶ月売上 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="projectRev" placeholder="40" min="0"><span class="input-unit">百万円</span></div></div><div><label>稼働率 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="utilRate" placeholder="65" min="0" max="100"><span class="input-unit">%</span></div></div></div></div><div class="field-group"><div style="max-width:300px"><label>YoY成長率 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="growth" placeholder="15" min="0"><span class="input-unit">%</span></div></div></div>`,
   presales:`<div class="field-hint" style="margin-bottom:16px;color:#666;font-size:12px">売上よりも検証の進み具合で比較します。</div><div class="field-group"><div class="field-row"><div><label>顧客インタビュー数 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="interviews" placeholder="30" min="0"><span class="input-unit">件</span></div></div><div><label>マイルストーン達成数 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="milestone" placeholder="4" min="0"><span class="input-unit">個</span></div></div></div></div>`,
-  other:`<div class="field-group"><div class="field-row"><div><label>売上（年換算） <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="arr" placeholder="20" min="0"><span class="input-unit">M円</span></div></div><div><label>成長率 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="growth" placeholder="18" min="0"><span class="input-unit">%</span></div></div></div></div>`,
+  other:`<div class="field-group"><div class="field-row"><div><label>売上（年換算） <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="arr" placeholder="20" min="0"><span class="input-unit">百万円</span></div></div><div><label>成長率 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="growth" placeholder="18" min="0"><span class="input-unit">%</span></div></div></div></div>`,
 };
 
 function initChips(id,key,cb){
@@ -444,7 +447,7 @@ function getRank(e){
 }
 
 function showResult(){
-  S.equity_raised=collectNum('equity_raised');S.debt_raised=collectNum('debt_raised');
+  S.equity_raised=collectNum('equity_raised');S.debt_raised=collectNum('debt_raised');S.grant_raised=collectNum('grant_raised');
   S.annual_revenue=collectNum('annual_revenue');S.operating_profit=collectNum('operating_profit');S.burn=collectNum('burn');S.runway=collectNum('runway');S.team=collectNum('team');
   S.submitter_email=document.getElementById('submitter_email').value.trim();
   ['arr','growth','churn','gmv','take','units','margin','projectRev','utilRate','milestone','interviews'].forEach(k=>{S[k]=collectNum(k);});
@@ -487,7 +490,7 @@ function showResult(){
 async function saveToSupabase(){
   const payload={
     sector:S.sector||null,stage:S.stage||null,age:S.age||null,biz_model:S.biz||null,
-    equity_raised:S.equity_raised,debt_raised:S.debt_raised,
+    equity_raised:S.equity_raised,debt_raised:S.debt_raised,grant_raised:S.grant_raised,
     annual_revenue:S.annual_revenue,operating_profit:S.operating_profit,
     burn:S.burn,runway:S.runway,team_size:S.team?parseInt(S.team):null,
     arr:S.arr,growth_rate:S.growth,churn_rate:S.churn,
