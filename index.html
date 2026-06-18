@@ -153,6 +153,8 @@ footer{text-align:center;padding:36px 24px;border-top:1px solid rgba(255,255,255
       <div class="step" id="si2"><div class="step-num">2</div><div class="step-label">ビジネスモデル</div></div>
       <div class="step-div"></div>
       <div class="step" id="si3"><div class="step-num">3</div><div class="step-label">業績データ</div></div>
+      <div class="step-div"></div>
+      <div class="step" id="si4"><div class="step-num">4</div><div class="step-label">セクター詳細</div></div>
     </div>
 
     <!-- STEP 1 -->
@@ -305,6 +307,17 @@ footer{text-align:center;padding:36px 24px;border-top:1px solid rgba(255,255,255
 
       <div class="btn-row">
         <button class="btn-secondary" onclick="goStep(2)">← 戻る</button>
+        <button class="btn-primary" onclick="goStep(4)">セクター詳細へ →</button>
+      </div>
+      <p class="privacy-note">入力データは<span>集計のみ</span>に使用。個社の数値は外部に出ません。</p>
+    </div>
+
+    <!-- STEP 4 -->
+    <div id="step4" class="hidden">
+      <p style="font-size:13px;color:var(--g400);margin-bottom:24px;line-height:1.6">選択したセクターに関連する情報です。わかる項目だけ入力してください。</p>
+      <div id="sector-specific-fields"></div>
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="goStep(3)">← 戻る</button>
         <button class="btn-primary" onclick="showResult()">ベンチマークを見る →</button>
       </div>
       <p class="privacy-note">入力データは<span>集計のみ</span>に使用。個社の数値は外部に出ません。</p>
@@ -368,7 +381,7 @@ footer{text-align:center;padding:36px 24px;border-top:1px solid rgba(255,255,255
 const SUPABASE_URL='https://rulkdsizgatzvndiwdzb.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1bGtkc2l6Z2F0enZuZGl3ZHpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2ODIwMzcsImV4cCI6MjA5NzI1ODAzN30.4iPa3teGkopItZ408Q6YWRihFeIqb2Eyj39toqGHT8o';
 
-const S={company:'',company_url:'',sector:'',stage:'',age:'',biz:'',equity_raised:null,debt_raised:null,grant_raised:null,annual_revenue:null,operating_profit:null,burn:null,runway:null,team:null,submitter_email:'',arr:null,growth:null,churn:null,gmv:null,take:null,units:null,margin:null,projectRev:null,utilRate:null,milestone:null,interviews:null};
+const S={company:'',company_url:'',sector:'',stage:'',age:'',biz:'',sector_status:{},equity_raised:null,debt_raised:null,grant_raised:null,annual_revenue:null,operating_profit:null,burn:null,runway:null,team:null,submitter_email:'',arr:null,growth:null,churn:null,gmv:null,take:null,units:null,margin:null,projectRev:null,utilRate:null,milestone:null,interviews:null};
 
 const BM_COMMON={
   equity_raised:{p25:20,p50:80,p75:200,p90:500,unit:'百万円',higher:true,label:'エクイティ調達累計'},
@@ -423,12 +436,13 @@ document.getElementById('biz-cards').querySelectorAll('.biz-card').forEach(b=>{
 
 function goStep(n){
   if(n>=2){S.company=document.getElementById('company').value.trim();S.company_url=document.getElementById('company_url').value.trim();}
-  [1,2,3].forEach(i=>{
+  [1,2,3,4].forEach(i=>{
     document.getElementById('step'+i).classList.toggle('hidden',i!==n);
     const si=document.getElementById('si'+i);si.classList.toggle('active',i===n);si.classList.toggle('done',i<n);
   });
-  document.getElementById('eyebrow').textContent=`Step ${n} of 3`;
+  document.getElementById('eyebrow').textContent=`Step ${n} of 4`;
   if(n===3)document.getElementById('model-specific-label').textContent=MODEL_LABELS[S.biz]||'',document.getElementById('model-specific-fields').innerHTML=MODEL_FIELDS[S.biz]||'';
+  if(n===4)renderSectorFields();
   document.getElementById('form-section').scrollIntoView({behavior:'smooth'});
 }
 
@@ -501,6 +515,7 @@ async function saveToSupabase(){
     milestone_count:S.milestone?parseInt(S.milestone):null,
     interview_count:S.interviews?parseInt(S.interviews):null,
     submitter_email:S.submitter_email||null,
+    sector_status:Object.keys(S.sector_status).length>0?S.sector_status:null,
   };
   try{
     const res=await fetch(`${SUPABASE_URL}/rest/v1/submissions`,{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Prefer':'return=minimal'},body:JSON.stringify(payload)});
@@ -534,6 +549,167 @@ async function submitWaitlist(){
       else{msg.style.color='#EF4444';msg.textContent='エラーが発生しました。もう一度お試しください。';}
     }
   }catch(e){msg.style.color='#EF4444';msg.textContent='送信に失敗しました。';}
+}
+
+// ── SECTOR SPECIFIC FIELDS ─────────────
+const SECTOR_FIELDS = {
+  'ライフサイエンス': {
+    fields: [
+      {id:'ls_type', label:'種別', type:'chip', options:['創薬','医療機器','SaMD','診断薬','その他']},
+      {id:'drug_phase', label:'開発フェーズ（創薬）', type:'chip', options:['基礎研究','非臨床','Phase1','Phase2','Phase3','承認済み'], hint:'創薬の場合のみ'},
+      {id:'samd_pmda', label:'PMDA申請状況（SaMD・医療機器）', type:'chip', options:['対象外','未申請','申請中','承認済み'], hint:'SaMD・医療機器の場合のみ'},
+      {id:'device_approval', label:'薬事承認取得国（医療機器・SaMD）', type:'chip', options:['未取得','日本（PMDA）','米国（FDA）','EU（CE）','複数国'], hint:'医療機器・SaMDの場合のみ', multi:true},
+      {id:'insurance_reimbursement', label:'保険償還', type:'chip', options:['未取得','申請中','日本で取得','米国で取得','複数国で取得']},
+      {id:'licensing', label:'導出・ライセンス契約', type:'chip', options:['なし','交渉中','締結済み（国内）','締結済み（海外）']},
+    ]
+  },
+  'ヘルスケア': {
+    fields: [
+      {id:'hc_type', label:'事業形態', type:'chip', options:['電子カルテ・レセコン','病院向け業務効率化SaaS','医師向け情報プラットフォーム','医療機関向け予約・CRM','遠隔診療','その他医療DX'], multi:true},
+      {id:'medical_institutions', label:'導入医療機関数', type:'number', unit:'施設', placeholder:'50'},
+      {id:'contract_type', label:'主な契約形態', type:'chip', options:['月次','年次','従量課金','複合']},
+      {id:'customer_size', label:'主な導入先', type:'chip', options:['クリニック（個人）','クリニック（グループ）','中小病院','大学病院・基幹病院','調剤薬局','その他'], multi:true},
+    ]
+  },
+  'SaaS': {
+    fields: [
+      {id:'customer_size', label:'主要顧客規模', type:'chip', options:['スタートアップ','SMB','中堅','エンタープライズ','複合'], multi:true},
+      {id:'contract_type', label:'主な契約形態', type:'chip', options:['月次','年次','従量課金','複合']},
+      {id:'customer_count', label:'導入社数', type:'number', unit:'社', placeholder:'50'},
+    ]
+  },
+  'AI': {
+    fields: [
+      {id:'customer_size', label:'主要顧客規模', type:'chip', options:['スタートアップ','SMB','中堅','エンタープライズ','複合'], multi:true},
+      {id:'ai_type', label:'AIの種別', type:'chip', options:['生成AI','予測AI','画像認識','自然言語処理','マルチモーダル','その他'], multi:true},
+      {id:'customer_count', label:'導入社数', type:'number', unit:'社', placeholder:'50'},
+    ]
+  },
+  'HR Tech': {
+    fields: [
+      {id:'hr_target', label:'対象', type:'chip', options:['採用','育成・研修','労務・給与','エンゲージメント','タレントマネジメント','複合'], multi:true},
+      {id:'customer_size', label:'主要顧客規模', type:'chip', options:['スタートアップ','SMB','中堅','エンタープライズ'], multi:true},
+      {id:'customer_count', label:'導入社数', type:'number', unit:'社', placeholder:'200'},
+    ]
+  },
+  'フィンテック': {
+    fields: [
+      {id:'fin_license', label:'ライセンス取得状況', type:'chip', options:['不要','未取得','申請中','取得済み（資金移動業）','取得済み（貸金業）','取得済み（その他）']},
+      {id:'fin_sandbox', label:'金融規制サンドボックス', type:'chip', options:['非参加','参加中','修了']},
+      {id:'fin_target', label:'主な顧客層', type:'chip', options:['個人','法人（SMB）','法人（大企業）','金融機関'], multi:true},
+    ]
+  },
+  '製造・ロボティクス・モビリティ': {
+    fields: [
+      {id:'product_status', label:'製品ステータス', type:'chip', options:['研究開発中','プロトタイプ','量産試作','量産済み']},
+      {id:'sales_channel', label:'主な販売先', type:'chip', options:['BtoB','BtoG','BtoC','複合'], multi:true},
+      {id:'patent_status', label:'特許取得状況', type:'chip', options:['なし','出願中','取得済み（国内）','取得済み（海外含む）']},
+      {id:'units_produced', label:'累計製造台数', type:'number', unit:'台', placeholder:'100'},
+    ]
+  },
+  '脱炭素・エネルギー': {
+    fields: [
+      {id:'energy_stage', label:'技術ステータス', type:'chip', options:['ラボ検証','パイロット','実証実験','商業運転']},
+      {id:'energy_subsidy', label:'補助金・認定', type:'chip', options:['なし','NEDO採択','GI基金','その他'], multi:true},
+      {id:'utility_partnership', label:'電力会社・自治体連携', type:'chip', options:['なし','交渉中','締結済み']},
+    ]
+  },
+  '宇宙・防衛': {
+    fields: [
+      {id:'space_phase', label:'開発フェーズ', type:'chip', options:['概念設計','EM（エンジニアリングモデル）','FM（フライトモデル）','打上済み']},
+      {id:'space_contract', label:'主な契約先', type:'chip', options:['JAXA','防衛省','民間','海外'], multi:true},
+      {id:'itar_compliance', label:'輸出規制（ITAR等）対応', type:'chip', options:['未対応','対応済み','対象外']},
+    ]
+  },
+  '量子・半導体・素材': {
+    fields: [
+      {id:'trl', label:'TRL（技術成熟度）', type:'chip', options:['TRL1','TRL2','TRL3','TRL4','TRL5','TRL6','TRL7','TRL8','TRL9']},
+      {id:'paper_count', label:'論文数（査読あり）', type:'number', unit:'本', placeholder:'5'},
+      {id:'research_collab', label:'大学・研究機関との共同研究', type:'chip', options:['なし','国内あり','海外あり','複数あり']},
+    ]
+  },
+  '教育': {
+    fields: [
+      {id:'edu_target', label:'対象', type:'chip', options:['幼児','小中高','大学','社会人','法人研修','複合'], multi:true},
+      {id:'edu_approval', label:'学習指導要領対応', type:'chip', options:['なし','対応済み','検定教科書採用']},
+      {id:'public_school', label:'公立学校導入実績', type:'chip', options:['なし','実証中','導入済み（〜10校）','導入済み（10校以上）']},
+    ]
+  },
+  'エンタメ': {
+    fields: [
+      {id:'content_type', label:'コンテンツ形態', type:'chip', options:['ゲーム','動画','音楽','イベント','IP','その他'], multi:true},
+      {id:'monetize', label:'課金モデル', type:'chip', options:['F2P（無料＋課金）','サブスク','都度課金','広告','複合']},
+      {id:'mau', label:'MAU', type:'number', unit:'万人', placeholder:'10'},
+    ]
+  },
+  'コンシューマ': {
+    fields: [
+      {id:'channel', label:'チャネル', type:'chip', options:['オンライン専業','オフライン','OMO（両方）']},
+      {id:'repeat_rate', label:'リピート率（月次）', type:'number', unit:'%', placeholder:'40'},
+      {id:'brand_type', label:'ブランド形態', type:'chip', options:['自社ブランド','プラットフォーム型','OEM','複合']},
+    ]
+  },
+  'ウェルネス・フィットネス': {
+    fields: [
+      {id:'wellness_channel', label:'提供形態', type:'chip', options:['オフライン','オンライン','ハイブリッド']},
+      {id:'retention', label:'継続率（月次）', type:'number', unit:'%', placeholder:'75'},
+      {id:'medical_partner', label:'医療機関・保険会社との提携', type:'chip', options:['なし','交渉中','提携済み']},
+    ]
+  },
+  'その他業務効率化': {
+    fields: [
+      {id:'customer_size', label:'主要顧客規模', type:'chip', options:['スタートアップ','SMB','中堅','エンタープライズ','複合'], multi:true},
+      {id:'customer_count', label:'導入社数', type:'number', unit:'社', placeholder:'50'},
+      {id:'contract_type', label:'主な契約形態', type:'chip', options:['月次','年次','従量課金','複合']},
+    ]
+  },
+};
+
+function renderSectorFields() {
+  const container = document.getElementById('sector-specific-fields');
+  const def = SECTOR_FIELDS[S.sector];
+  if(!def) {
+    container.innerHTML = '<p style="font-size:13px;color:var(--g400)">このセクターの追加質問はありません。そのままベンチマークを見ることができます。</p>';
+    return;
+  }
+  container.innerHTML = '';
+  def.fields.forEach(f => {
+    const div = document.createElement('div');
+    div.className = 'field-group';
+    if(f.type === 'chip') {
+      const multi = f.multi ? '<span class="opt">複数選択可</span>' : '';
+      div.innerHTML = `
+        <label>${f.label} <span class="opt">任意</span>${multi}</label>
+        ${f.hint ? `<div class="field-hint" style="margin-bottom:10px">${f.hint}</div>` : ''}
+        <div class="chip-group" id="ss-${f.id}">
+          ${f.options.map(o=>`<button class="chip" data-val="${o}" data-field="${f.id}" data-multi="${f.multi||false}" onclick="toggleSectorChip(this)">${o}</button>`).join('')}
+        </div>`;
+    } else if(f.type === 'number') {
+      div.innerHTML = `
+        <label>${f.label} <span class="opt">任意</span></label>
+        <div class="input-with-unit" style="max-width:280px">
+          <input type="number" id="ss-num-${f.id}" placeholder="${f.placeholder||0}" min="0" onchange="S.sector_status['${f.id}']=parseFloat(this.value)||null">
+          <span class="input-unit">${f.unit}</span>
+        </div>`;
+    }
+    container.appendChild(div);
+  });
+}
+
+function toggleSectorChip(btn) {
+  const field = btn.dataset.field;
+  const val = btn.dataset.val;
+  const isMulti = btn.dataset.multi === 'true';
+  const group = document.getElementById('ss-'+field);
+  if(!isMulti) {
+    group.querySelectorAll('.chip').forEach(b=>b.classList.remove('selected'));
+    btn.classList.add('selected');
+    S.sector_status[field] = val;
+  } else {
+    btn.classList.toggle('selected');
+    const selected = [...group.querySelectorAll('.chip.selected')].map(b=>b.dataset.val);
+    S.sector_status[field] = selected.length > 0 ? selected : null;
+  }
 }
 </script>
 </body>
