@@ -111,6 +111,11 @@ tr:hover td{background:#FAFAFA}
       <span class="nav-badge">Admin</span>
     </div>
     <div class="nav-right">
+      <div class="tab-btns">
+        <button class="tab-btn active" id="tab-dashboard" onclick="switchTab('dashboard')">ダッシュボード</button>
+        <button class="tab-btn" id="tab-tracking" onclick="switchTab('tracking')">企業トラッキング</button>
+        <button class="tab-btn" id="tab-waitlist" onclick="switchTab('waitlist')">待機リスト</button>
+      </div>
       <span class="last-updated" id="last-updated"></span>
       <button class="refresh-btn" onclick="loadAll()">↻ 更新</button>
     </div>
@@ -219,6 +224,56 @@ tr:hover td{background:#FAFAFA}
       </div>
     </div>
   </main>
+
+  <!-- TRACKING TAB -->
+  <div id="tab-tracking-content" style="display:none">
+    <main>
+      <div class="page-title">企業トラッキング</div>
+      <div class="page-sub">同一メールアドレスまたはURLで複数回入力した企業の成長推移</div>
+      <div id="tracking-loading" class="loading"><div class="spinner"></div>データを読み込み中...</div>
+      <div id="tracking-content" style="display:none">
+        <div class="table-card">
+          <div class="table-header">
+            <div class="table-title">追跡中の企業</div>
+            <div class="table-count" id="tracking-count"></div>
+          </div>
+          <table class="tracking-table" style="width:100%;border-collapse:collapse">
+            <thead>
+              <tr>
+                <th style="font-size:11px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.08em;padding:8px 12px;text-align:left;border-bottom:1px solid var(--g200)"></th>
+                <th style="font-size:11px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.08em;padding:8px 12px;text-align:left;border-bottom:1px solid var(--g200)">識別子</th>
+                <th style="font-size:11px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.08em;padding:8px 12px;text-align:left;border-bottom:1px solid var(--g200)">入力回数</th>
+                <th style="font-size:11px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.08em;padding:8px 12px;text-align:left;border-bottom:1px solid var(--g200)">初回</th>
+                <th style="font-size:11px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.08em;padding:8px 12px;text-align:left;border-bottom:1px solid var(--g200)">最終</th>
+                <th style="font-size:11px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.08em;padding:8px 12px;text-align:left;border-bottom:1px solid var(--g200)">最新ARR</th>
+                <th style="font-size:11px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.08em;padding:8px 12px;text-align:left;border-bottom:1px solid var(--g200)">最新調達額</th>
+                <th style="font-size:11px;font-weight:700;color:var(--g400);text-transform:uppercase;letter-spacing:.08em;padding:8px 12px;text-align:left;border-bottom:1px solid var(--g200)">セクター</th>
+              </tr>
+            </thead>
+            <tbody id="tracking-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- WAITLIST TAB -->
+  <div id="tab-waitlist-content" style="display:none">
+    <main>
+      <div class="page-title">レポート待機リスト</div>
+      <div class="page-sub">「レポートを受け取る」ボタンから登録したメールアドレス</div>
+      <div id="waitlist-loading" class="loading"><div class="spinner"></div>データを読み込み中...</div>
+      <div id="waitlist-content" style="display:none">
+        <div class="table-card" style="margin-bottom:24px">
+          <div class="table-header">
+            <div class="table-title">登録者数</div>
+            <div class="table-count" id="waitlist-total"></div>
+          </div>
+        </div>
+        <div class="waitlist-grid" id="waitlist-grid"></div>
+      </div>
+    </main>
+  </div>
 </div>
 
 <script>
@@ -458,6 +513,131 @@ function drawBar(id, labels, data) {
       plugins:{ legend:{ display:false } },
       scales:{ y:{ beginAtZero:true, ticks:{stepSize:1}, grid:{color:'rgba(0,0,0,.05)'} }, x:{ grid:{display:false} } }
     }
+  });
+}
+
+// ── TAB SWITCH ──────────────────────────
+function switchTab(tab) {
+  ['dashboard','tracking','waitlist'].forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+    const el = t==='dashboard'
+      ? document.getElementById('dashboard').querySelector('main')
+      : document.getElementById('tab-'+t+'-content');
+    if(el) el.style.display = t===tab ? 'block' : 'none';
+  });
+  // lazy load
+  if(tab==='tracking') loadTracking();
+  if(tab==='waitlist') loadWaitlist();
+}
+
+// hide dashboard main on init — show via tab
+document.addEventListener('DOMContentLoaded', () => {
+  const dm = document.getElementById('dashboard').querySelector('main');
+  if(dm) dm.dataset.managed = '1';
+});
+
+// ── LOAD TRACKING ───────────────────────
+async function loadTracking() {
+  document.getElementById('tracking-loading').style.display='block';
+  document.getElementById('tracking-content').style.display='none';
+  const headers={'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`};
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/company_tracking?select=*&order=submission_count.desc`, {headers});
+    const data = await res.json();
+    renderTracking(Array.isArray(data)?data:[]);
+  } catch(e) {
+    document.getElementById('tracking-loading').innerHTML='<p style="color:#EF4444">読み込み失敗</p>';
+  }
+}
+
+function renderTracking(data) {
+  document.getElementById('tracking-loading').style.display='none';
+  document.getElementById('tracking-content').style.display='block';
+  document.getElementById('tracking-count').textContent = data.length+'社';
+
+  const tbody = document.getElementById('tracking-tbody');
+  tbody.innerHTML='';
+
+  if(data.length===0){
+    tbody.innerHTML='<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--g400);font-size:13px">まだトラッキングデータがありません。<br>同じメールアドレスで2回以上入力されると表示されます。</td></tr>';
+    return;
+  }
+
+  data.forEach((r,i) => {
+    const key = r.submitter_email || r.company_url || '不明';
+    const isMulti = parseInt(r.submission_count) > 1;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="padding:10px 12px;border-bottom:1px solid var(--g100)">
+        ${isMulti ? `<button class="expand-btn" onclick="toggleDetail(${i})">▶ 詳細</button>` : ''}
+      </td>
+      <td style="padding:10px 12px;border-bottom:1px solid var(--g100);font-size:13px;color:var(--g800)">
+        <span class="timeline-dot"></span>${key}
+      </td>
+      <td style="padding:10px 12px;border-bottom:1px solid var(--g100)">
+        <span style="font-size:13px;font-weight:700;color:${isMulti?'var(--mint-dk)':'var(--g600)'}">${r.submission_count}回</span>
+      </td>
+      <td style="padding:10px 12px;border-bottom:1px solid var(--g100);font-size:12px;color:var(--g400)">${new Date(r.first_seen).toLocaleDateString('ja-JP')}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid var(--g100);font-size:12px;color:var(--g400)">${new Date(r.last_seen).toLocaleDateString('ja-JP')}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid var(--g100);font-size:13px;font-weight:600">${r.latest_arr!=null?r.latest_arr+'百万円':'—'}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid var(--g100);font-size:13px;font-weight:600">${r.latest_equity!=null?r.latest_equity+'百万円':'—'}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid var(--g100);font-size:12px;color:var(--g600)">${r.sectors||'—'}</td>`;
+    tbody.appendChild(tr);
+
+    // Detail row (hidden by default)
+    if(isMulti) {
+      const detailTr = document.createElement('tr');
+      detailTr.id = `detail-${i}`;
+      detailTr.className = 'detail-row';
+      detailTr.style.display = 'none';
+      detailTr.innerHTML = `<td colspan="8"><div class="detail-inner"><p style="font-size:12px;color:var(--g400);margin-bottom:8px">成長推移（最新→古い順）を読み込むには「詳細」をクリックしてください。詳細データはsubmissionsテーブルから取得します。</p></div></td>`;
+      tbody.appendChild(detailTr);
+    }
+  });
+}
+
+async function toggleDetail(i) {
+  const row = document.getElementById(`detail-${i}`);
+  if(!row) return;
+  const isVisible = row.style.display !== 'none';
+  row.style.display = isVisible ? 'none' : 'table-row';
+}
+
+// ── LOAD WAITLIST ───────────────────────
+async function loadWaitlist() {
+  document.getElementById('waitlist-loading').style.display='block';
+  document.getElementById('waitlist-content').style.display='none';
+  const headers={'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`};
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/waitlist?select=*&order=created_at.desc`, {headers});
+    const data = await res.json();
+    renderWaitlist(Array.isArray(data)?data:[]);
+  } catch(e) {
+    document.getElementById('waitlist-loading').innerHTML='<p style="color:#EF4444">読み込み失敗</p>';
+  }
+}
+
+function renderWaitlist(data) {
+  document.getElementById('waitlist-loading').style.display='none';
+  document.getElementById('waitlist-content').style.display='block';
+  document.getElementById('waitlist-total').textContent = data.length+'名登録';
+  const grid = document.getElementById('waitlist-grid');
+  grid.innerHTML='';
+  if(data.length===0){
+    grid.innerHTML='<p style="color:var(--g400);font-size:13px">まだ登録者がいません。</p>';
+    return;
+  }
+  data.forEach(r => {
+    const initial = r.email ? r.email[0].toUpperCase() : '?';
+    const card = document.createElement('div');
+    card.className='waitlist-card';
+    card.innerHTML=`
+      <div class="waitlist-avatar">${initial}</div>
+      <div>
+        <div class="waitlist-email">${r.email}</div>
+        <div class="waitlist-date">${new Date(r.created_at).toLocaleDateString('ja-JP',{year:'numeric',month:'short',day:'numeric'})}</div>
+      </div>`;
+    grid.appendChild(card);
   });
 }
 </script>
