@@ -159,14 +159,7 @@ footer{text-align:center;padding:36px 24px;border-top:1px solid rgba(255,255,255
 
     <!-- STEP 1 -->
     <div id="step1">
-      <div class="field-group">
-        <label>会社名<span class="req">*</span></label>
-        <input type="text" id="company" placeholder="○○株式会社">
-      </div>
-      <div class="field-group">
-        <label>会社URL <span class="opt">任意</span></label>
-        <input type="text" id="company_url" placeholder="https://example.com">
-      </div>
+
       <div class="field-group">
         <label>セクター<span class="req">*</span></label>
         <div class="chip-group" id="sector-chips">
@@ -422,10 +415,9 @@ function initChips(id,key,cb){
 initChips('sector-chips','sector',validateS1);
 initChips('stage-chips','stage',validateS1);
 initChips('age-chips','age',validateS1);
-document.getElementById('company').addEventListener('input',validateS1);
 
 function validateS1(){
-  document.getElementById('next1-btn').disabled=!(document.getElementById('company').value.trim()&&S.sector&&S.stage&&S.age);
+  document.getElementById('next1-btn').disabled=!(S.sector&&S.stage&&S.age);
 }
 document.getElementById('biz-cards').querySelectorAll('.biz-card').forEach(b=>{
   b.addEventListener('click',()=>{
