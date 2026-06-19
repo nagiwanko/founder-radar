@@ -133,6 +133,11 @@ footer{text-align:center;padding:36px 24px;border-top:1px solid rgba(255,255,255
   <h1>自社の立ち位置を、<br><em>データで知る。</em></h1>
   <p class="hero-sub">同セクター・同ステージの起業家と比べて、自社の成長速度はどこにあるか。3分で確認できます。</p>
   <a href="#form-section" class="hero-cta">いますぐ試す — 無料</a>
+  <div class="hero-stats">
+    <div><div class="hero-stat-num">全</div><div class="hero-stat-label">業種対応</div></div>
+    <div><div class="hero-stat-num">完全</div><div class="hero-stat-label">匿名</div></div>
+    <div><div class="hero-stat-num">3分</div><div class="hero-stat-label">で完了</div></div>
+  </div>
 </div>
 
 <div id="form-section">
@@ -500,7 +505,7 @@ function showResult(){
 
 async function saveToSupabase(){
   const payload={
-    sector:S.sector||null,stage:S.stage||null,age:S.age||null,biz_model:S.biz||null,
+    company_name:S.company||null,company_url:S.company_url||null,sector:S.sector||null,stage:S.stage||null,age:S.age||null,biz_model:S.biz||null,
     equity_raised:S.equity_raised,debt_raised:S.debt_raised,grant_raised:S.grant_raised,
     annual_revenue:S.annual_revenue,operating_profit:S.operating_profit,
     burn:S.burn,runway:S.runway,team_size:S.team?parseInt(S.team):null,
@@ -510,7 +515,7 @@ async function saveToSupabase(){
     milestone_count:S.milestone?parseInt(S.milestone):null,
     interview_count:S.interviews?parseInt(S.interviews):null,
     submitter_email:S.submitter_email||null,
-    sector_status:Object.keys(S.sector_status).length>0?S.sector_status:null,
+    sector_status:Object.keys(S.sector_status||{}).length>0?S.sector_status:null,
   };
   try{
     const res=await fetch(`${SUPABASE_URL}/rest/v1/submissions`,{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Prefer':'return=minimal'},body:JSON.stringify(payload)});
