@@ -432,7 +432,7 @@ document.getElementById('biz-cards').querySelectorAll('.biz-card').forEach(b=>{
 });
 
 function goStep(n){
-  if(n>=2){S.company=document.getElementById('company').value.trim();S.company_url=document.getElementById('company_url').value.trim();}
+  
   [1,2,3,4].forEach(i=>{
     document.getElementById('step'+i).classList.toggle('hidden',i!==n);
     const si=document.getElementById('si'+i);si.classList.toggle('active',i===n);si.classList.toggle('done',i<n);
