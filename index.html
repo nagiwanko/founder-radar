@@ -150,11 +150,9 @@ footer{text-align:center;padding:36px 24px;border-top:1px solid rgba(255,255,255
     <div class="steps">
       <div class="step active" id="si1"><div class="step-num">1</div><div class="step-label">基本情報</div></div>
       <div class="step-div"></div>
-      <div class="step" id="si2"><div class="step-num">2</div><div class="step-label">ビジネスモデル</div></div>
+      <div class="step" id="si2"><div class="step-num">2</div><div class="step-label">業績データ</div></div>
       <div class="step-div"></div>
-      <div class="step" id="si3"><div class="step-num">3</div><div class="step-label">業績データ</div></div>
-      <div class="step-div"></div>
-      <div class="step" id="si4"><div class="step-num">4</div><div class="step-label">セクター詳細</div></div>
+      <div class="step" id="si3"><div class="step-num">3</div><div class="step-label">セクター詳細</div></div>
     </div>
 
     <!-- STEP 1 -->
@@ -208,32 +206,12 @@ footer{text-align:center;padding:36px 24px;border-top:1px solid rgba(255,255,255
           <button class="chip" data-val="7年以上">7年以上</button>
         </div>
       </div>
-      <button class="btn-primary" id="next1-btn" disabled onclick="goStep(2)">ビジネスモデルを選ぶ →</button>
+      <button class="btn-primary" id="next1-btn" disabled onclick="goStep(2)">業績データを入力 →</button>
       <p class="privacy-note">入力データは<span>集計のみ</span>に使用。個社の数値は外部に出ません。</p>
     </div>
 
     <!-- STEP 2 -->
     <div id="step2" class="hidden">
-      <div class="field-group">
-        <label>ビジネスモデル<span class="req">*</span></label>
-        <div class="field-hint" style="margin-bottom:14px">最も近いものを1つ選択。指標の質問がこれで変わります。</div>
-        <div class="biz-grid" id="biz-cards">
-          <button class="biz-card" data-val="saas"><div class="biz-card-icon">📦</div><div class="biz-card-title">SaaS / サブスク</div><div class="biz-card-desc">月次・年次の定額課金</div></button>
-          <button class="biz-card" data-val="marketplace"><div class="biz-card-icon">🔄</div><div class="biz-card-title">マーケットプレイス</div><div class="biz-card-desc">GMV・テイクレート型</div></button>
-          <button class="biz-card" data-val="hardware"><div class="biz-card-icon">🤖</div><div class="biz-card-title">ハード販売</div><div class="biz-card-desc">製品販売＋保守・ライセンス</div></button>
-          <button class="biz-card" data-val="project"><div class="biz-card-icon">🏗️</div><div class="biz-card-title">受託・プロジェクト型</div><div class="biz-card-desc">案件単位の売上</div></button>
-          <button class="biz-card" data-val="presales"><div class="biz-card-icon">🔬</div><div class="biz-card-title">開発中（プレ売上）</div><div class="biz-card-desc">まだ売上なし</div></button>
-          <button class="biz-card" data-val="other"><div class="biz-card-icon">⚡</div><div class="biz-card-title">その他・複合型</div><div class="biz-card-desc">複数モデルの組み合わせ</div></button>
-        </div>
-      </div>
-      <div class="btn-row">
-        <button class="btn-secondary" onclick="goStep(1)">← 戻る</button>
-        <button class="btn-primary" id="next2-btn" disabled onclick="goStep(3)">業績データを入力 →</button>
-      </div>
-    </div>
-
-    <!-- STEP 3 -->
-    <div id="step3" class="hidden">
       <p style="font-size:13px;color:var(--g400);margin-bottom:24px;line-height:1.6">わかる項目だけ入力してください。空欄はスキップされます。</p>
 
       <div class="form-section-label">資金調達</div>
@@ -291,9 +269,6 @@ footer{text-align:center;padding:36px 24px;border-top:1px solid rgba(255,255,255
         </div>
       </div>
 
-      <div class="form-divider"></div>
-      <div class="form-section-label" id="model-specific-label"></div>
-      <div id="model-specific-fields"></div>
 
       <div class="form-divider"></div>
       <div class="form-section-label">レポート受け取り（トラッキング）</div>
@@ -304,18 +279,18 @@ footer{text-align:center;padding:36px 24px;border-top:1px solid rgba(255,255,255
       </div>
 
       <div class="btn-row">
-        <button class="btn-secondary" onclick="goStep(2)">← 戻る</button>
-        <button class="btn-primary" onclick="goStep(4)">セクター詳細へ →</button>
+        <button class="btn-secondary" onclick="goStep(1)">← 戻る</button>
+        <button class="btn-primary" onclick="goStep(3)">セクター詳細へ →</button>
       </div>
       <p class="privacy-note">入力データは<span>集計のみ</span>に使用。個社の数値は外部に出ません。</p>
     </div>
 
     <!-- STEP 4 -->
-    <div id="step4" class="hidden">
+    <div id="step3" class="hidden">
       <p style="font-size:13px;color:var(--g400);margin-bottom:24px;line-height:1.6">選択したセクターに関連する情報です。わかる項目だけ入力してください。</p>
       <div id="sector-specific-fields"></div>
       <div class="btn-row">
-        <button class="btn-secondary" onclick="goStep(3)">← 戻る</button>
+        <button class="btn-secondary" onclick="goStep(2)">← 戻る</button>
         <button class="btn-primary" onclick="showResult()">ベンチマークを見る →</button>
       </div>
       <p class="privacy-note">入力データは<span>集計のみ</span>に使用。個社の数値は外部に出ません。</p>
@@ -379,7 +354,7 @@ footer{text-align:center;padding:36px 24px;border-top:1px solid rgba(255,255,255
 const SUPABASE_URL='https://rulkdsizgatzvndiwdzb.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ1bGtkc2l6Z2F0enZuZGl3ZHpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2ODIwMzcsImV4cCI6MjA5NzI1ODAzN30.4iPa3teGkopItZ408Q6YWRihFeIqb2Eyj39toqGHT8o';
 
-const S={company:'',company_url:'',sector:'',stage:'',age:'',biz:'',sector_status:{},equity_raised:null,debt_raised:null,grant_raised:null,annual_revenue:null,operating_profit:null,burn:null,runway:null,team:null,submitter_email:'',arr:null,growth:null,churn:null,gmv:null,take:null,units:null,margin:null,projectRev:null,utilRate:null,milestone:null,interviews:null};
+const S={sector:'',stage:'',age:'',sector_status:{},equity_raised:null,debt_raised:null,grant_raised:null,annual_revenue:null,operating_profit:null,burn:null,runway:null,team:null,submitter_email:'',arr:null,growth:null,churn:null,gmv:null,take:null,units:null,margin:null,projectRev:null,utilRate:null,milestone:null,interviews:null};
 
 const BM_COMMON={
   equity_raised:{p25:20,p50:80,p75:200,p90:500,unit:'百万円',higher:true,label:'エクイティ調達累計'},
@@ -390,23 +365,6 @@ const BM_COMMON={
   burn:{p25:1,p50:4,p75:9,p90:18,unit:'百万円/月',higher:false,label:'月次バーン'},
   runway:{p25:8,p50:14,p75:22,p90:36,unit:'ヶ月',higher:true,label:'ランウェイ'},
   team:{p25:3,p50:8,p75:16,p90:28,unit:'人',higher:true,label:'チーム人数'},
-};
-const BM_MODEL={
-  saas:{arr:{p25:8,p50:24,p75:60,p90:150,unit:'百万円',higher:true,label:'ARR'},growth:{p25:10,p50:22,p75:40,p90:70,unit:'%',higher:true,label:'MoM成長率'},churn:{p25:0.5,p50:1.2,p75:3.0,p90:5.5,unit:'%',higher:false,label:'月次チャーン'}},
-  marketplace:{gmv:{p25:50,p50:200,p75:600,p90:2000,unit:'百万円',higher:true,label:'月次GMV'},take:{p25:5,p50:12,p75:20,p90:30,unit:'%',higher:true,label:'テイクレート'},growth:{p25:15,p50:28,p75:50,p90:80,unit:'%',higher:true,label:'MoM成長率'}},
-  hardware:{units:{p25:10,p50:50,p75:200,p90:600,unit:'台',higher:true,label:'累計販売台数'},margin:{p25:15,p50:35,p75:55,p90:70,unit:'%',higher:true,label:'粗利率'},arr:{p25:5,p50:20,p75:60,p90:150,unit:'百万円',higher:true,label:'保守ARR'}},
-  project:{projectRev:{p25:10,p50:40,p75:100,p90:250,unit:'百万円',higher:true,label:'直近12ヶ月売上'},utilRate:{p25:40,p50:65,p75:80,p90:90,unit:'%',higher:true,label:'稼働率'},growth:{p25:5,p50:15,p75:30,p90:60,unit:'%',higher:true,label:'YoY成長率'}},
-  presales:{interviews:{p25:10,p50:30,p75:60,p90:120,unit:'件',higher:true,label:'顧客インタビュー数'},milestone:{p25:2,p50:4,p75:7,p90:10,unit:'個',higher:true,label:'マイルストーン達成数'}},
-  other:{arr:{p25:5,p50:20,p75:60,p90:150,unit:'百万円',higher:true,label:'売上（年換算）'},growth:{p25:8,p50:18,p75:35,p90:60,unit:'%',higher:true,label:'成長率'}},
-};
-const MODEL_LABELS={saas:'SaaS固有の指標',marketplace:'マーケットプレイス固有の指標',hardware:'ハード販売固有の指標',project:'受託・プロジェクト固有の指標',presales:'開発進捗の指標',other:'売上・成長指標'};
-const MODEL_FIELDS={
-  saas:`<div class="field-group"><div class="field-row"><div><label>ARR <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="arr" placeholder="24" min="0"><span class="input-unit">百万円</span></div></div><div><label>MoM成長率 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="growth" placeholder="18" min="0"><span class="input-unit">%</span></div></div></div></div><div class="field-group"><div style="max-width:300px"><label>月次チャーン率 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="churn" placeholder="1.2" min="0" step="0.1"><span class="input-unit">%</span></div></div></div>`,
-  marketplace:`<div class="field-group"><div class="field-row"><div><label>月次GMV <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="gmv" placeholder="200" min="0"><span class="input-unit">百万円</span></div></div><div><label>テイクレート <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="take" placeholder="12" min="0" step="0.1"><span class="input-unit">%</span></div></div></div></div><div class="field-group"><div style="max-width:300px"><label>MoM成長率 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="growth" placeholder="25" min="0"><span class="input-unit">%</span></div></div></div>`,
-  hardware:`<div class="field-group"><div class="field-row"><div><label>累計販売台数 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="units" placeholder="50" min="0"><span class="input-unit">台</span></div></div><div><label>粗利率 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="margin" placeholder="35" min="0" max="100"><span class="input-unit">%</span></div></div></div></div><div class="field-group"><div style="max-width:300px"><label>保守・ライセンスARR <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="arr" placeholder="20" min="0"><span class="input-unit">百万円</span></div></div></div>`,
-  project:`<div class="field-group"><div class="field-row"><div><label>直近12ヶ月売上 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="projectRev" placeholder="40" min="0"><span class="input-unit">百万円</span></div></div><div><label>稼働率 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="utilRate" placeholder="65" min="0" max="100"><span class="input-unit">%</span></div></div></div></div><div class="field-group"><div style="max-width:300px"><label>YoY成長率 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="growth" placeholder="15" min="0"><span class="input-unit">%</span></div></div></div>`,
-  presales:`<div class="field-hint" style="margin-bottom:16px;color:#666;font-size:12px">売上よりも検証の進み具合で比較します。</div><div class="field-group"><div class="field-row"><div><label>顧客インタビュー数 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="interviews" placeholder="30" min="0"><span class="input-unit">件</span></div></div><div><label>マイルストーン達成数 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="milestone" placeholder="4" min="0"><span class="input-unit">個</span></div></div></div></div>`,
-  other:`<div class="field-group"><div class="field-row"><div><label>売上（年換算） <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="arr" placeholder="20" min="0"><span class="input-unit">百万円</span></div></div><div><label>成長率 <span class="opt">任意</span></label><div class="input-with-unit"><input type="number" id="growth" placeholder="18" min="0"><span class="input-unit">%</span></div></div></div></div>`,
 };
 
 function initChips(id,key,cb){
@@ -424,22 +382,15 @@ initChips('age-chips','age',validateS1);
 function validateS1(){
   document.getElementById('next1-btn').disabled=!(S.sector&&S.stage&&S.age);
 }
-document.getElementById('biz-cards').querySelectorAll('.biz-card').forEach(b=>{
-  b.addEventListener('click',()=>{
-    document.getElementById('biz-cards').querySelectorAll('.biz-card').forEach(x=>x.classList.remove('selected'));
-    b.classList.add('selected');S.biz=b.dataset.val;document.getElementById('next2-btn').disabled=false;
-  });
-});
 
 function goStep(n){
   
-  [1,2,3,4].forEach(i=>{
+  [1,2,3].forEach(i=>{
     document.getElementById('step'+i).classList.toggle('hidden',i!==n);
     const si=document.getElementById('si'+i);si.classList.toggle('active',i===n);si.classList.toggle('done',i<n);
   });
-  document.getElementById('eyebrow').textContent=`Step ${n} of 4`;
-  if(n===3)document.getElementById('model-specific-label').textContent=MODEL_LABELS[S.biz]||'',document.getElementById('model-specific-fields').innerHTML=MODEL_FIELDS[S.biz]||'';
-  if(n===4)renderSectorFields();
+  document.getElementById('eyebrow').textContent=`Step ${n} of 3`;
+  if(n===3)renderSectorFields();
   document.getElementById('form-section').scrollIntoView({behavior:'smooth'});
 }
 
@@ -463,15 +414,13 @@ function showResult(){
   S.equity_raised=collectNum('equity_raised');S.debt_raised=collectNum('debt_raised');S.grant_raised=collectNum('grant_raised');
   S.annual_revenue=collectNum('annual_revenue');S.operating_profit=collectNum('operating_profit');S.burn=collectNum('burn');S.runway=collectNum('runway');S.team=collectNum('team');
   S.submitter_email=document.getElementById('submitter_email').value.trim();
-  ['arr','growth','churn','gmv','take','units','margin','projectRev','utilRate','milestone','interviews'].forEach(k=>{S[k]=collectNum(k);});
 
-  const bmModel=BM_MODEL[S.biz]||{};
-  const allDefs=[...Object.entries(BM_COMMON).map(([k,d])=>({key:k,...d,val:S[k]})),...Object.entries(bmModel).map(([k,d])=>({key:k,...d,val:S[k]}))];
+
+  const allDefs=[...Object.entries(BM_COMMON).map(([k,d])=>({key:k,...d,val:S[k]}))];
   const scored=allDefs.filter(d=>d.val!==null).map(d=>{const pct=getPct(d.val,d);const eff=d.higher?pct:100-pct;return{...d,pct,eff,rank:getRank(eff)};});
   const overall=scored.length>0?Math.round(scored.reduce((a,m)=>a+m.eff,0)/scored.length):null;
 
-  const bizLabel={saas:'SaaS',marketplace:'マーケットプレイス',hardware:'ハード',project:'受託',presales:'開発中',other:'その他'}[S.biz]||S.biz;
-  document.getElementById('score-company').textContent=`${S.company} · ${S.sector} · ${S.stage} · ${bizLabel}`;
+  document.getElementById('score-company').textContent=`${S.sector} · ${S.stage}`;
 
   if(overall!==null){
     document.getElementById('score-num').textContent=overall;
@@ -502,7 +451,7 @@ function showResult(){
 
 async function saveToSupabase(){
   const payload={
-    company_name:S.company||null,company_url:S.company_url||null,sector:S.sector||null,stage:S.stage||null,age:S.age||null,biz_model:S.biz||null,
+    company_name:S.company||null,company_url:S.company_url||null,sector:S.sector||null,stage:S.stage||null,age:S.age||null,
     equity_raised:S.equity_raised,debt_raised:S.debt_raised,grant_raised:S.grant_raised,
     annual_revenue:S.annual_revenue,operating_profit:S.operating_profit,
     burn:S.burn,runway:S.runway,team_size:S.team?parseInt(S.team):null,
