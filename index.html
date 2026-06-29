@@ -553,19 +553,19 @@ function showResult(){
 
 async function saveToSupabase(){
   const payload={
-    sector:S.sector||null,stage:S.stage||null,age:S.age||null,
-    equity_raised:null,debt_raised:null,grant_raised:null,
-    annual_revenue:null,profit_status:S.profit_status||null,
+    sector:S.sector||null,
+    stage:S.stage||null,
+    age:S.age||null,
+    equity_raised:S.equity_raised||null,
+    grant_raised:S.grant_raised||null,
+    profit_status:S.profit_status||null,
     revenue_range:S.revenue_range||null,
-    burn:null,runway:null,team_size:null,
     submitter_email:S.submitter_email||null,
     sector_status:(S.sector_status&&Object.keys(S.sector_status).length>0)?S.sector_status:null,
-    extra_data:JSON.stringify({
-      equity_raised:S.equity_raised||null,
-      grant_raised:S.grant_raised||null,
+    extra_data:{
       runway_range:S.runway_range||null,
       team_range:S.team_range||null,
-    }),
+    },
   };
   try{await fetch(`${SUPABASE_URL}/rest/v1/submissions`,{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Prefer':'return=minimal'},body:JSON.stringify(payload)});}
   catch(e){console.warn(e);}
